@@ -102,9 +102,11 @@ def main(num_agents, is_connections_visualization_on, domain):
     
     # num_agents, is_connections_visualization_on, domain = parse_cli_args()
 
-    base = domain + "fake_news"
+    base = domain + "_fake_news"
     domain = "@agents-sim.xyz/0"
     password = "asdasdsdgghtr434bdsdg"
+    
+    print(f"Running simulation: {base}")
 
     graph_creator = GraphCreator(base, domain, password, num_agents)
     print(f"Creating network with {num_agents} agents")
