@@ -32,8 +32,8 @@ async def get_simulation(websocket: WebSocket, simulation_id: str):
             await websocket.send_json({"id": simulation_id, "error": "Simulation not found"})
             await websocket.close()
         except:
-            await websocket.send_json({"id": simulation_id, "error": "Unknown error"})
             del simulations[simulation_id]
+            await websocket.send_json({"id": simulation_id, "error": "Unknown error"})
             await websocket.close()
         if line:
             await websocket.send_json({"id": simulation_id, "line": line.decode("utf-8").strip('\n')})
