@@ -46,6 +46,7 @@ Jinja2 = "==3.0.1"
 dash = "*"
 virtualenvwrapper = "*"
 spade = {git = "git://github.com/agent-based-information-flow-simulation/spade.git"}
+fastapi = {extras = ["all"], version = "*"}
 
 [dev-packages]
 

@@ -5,3 +5,4 @@ venv/
 clean-spade
 forked-spade
 logs*
+test.py
