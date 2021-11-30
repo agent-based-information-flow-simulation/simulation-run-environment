@@ -45,7 +45,7 @@ FaSh = "*"
 Jinja2 = "==3.0.1"
 dash = "*"
 virtualenvwrapper = "*"
-spade = {git = "git://github.com/agent-based-information-flow-simulation/spade.git"}
+spade = {git = "https://github.com/agent-based-information-flow-simulation/spade"}
 fastapi = {extras = ["all"], version = "*"}
 
 [dev-packages]
