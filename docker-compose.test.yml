@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  graph-generator:
+    build:
+      context: ./graph-generator
+      dockerfile: Dockerfile.test
+    container_name: graph-generator-test
+    restart: "no"
+
+  simulation-load-balancer:
+    build:
+      context: ./simulation-load-balancer
+      dockerfile: Dockerfile.test
+    container_name: simulation-load-balancer-test
+    restart: "no"
+
+  translator:
+    build:
+      context: ./translator
+      dockerfile: Dockerfile.test
+    container_name: translator-test
+    restart: "no"

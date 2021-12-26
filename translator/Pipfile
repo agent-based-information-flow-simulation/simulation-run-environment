@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aasm = "*"
+fastapi = {extras = ["all"], version = "*"}
+httpx = "*"
+
+[dev-packages]
+black = "*"
+isort = "*"
+pytest = "*"
+coverage = "*"
+asgi-lifespan = "*"
+pytest-asyncio = "*"
+pytest-httpx = "*"
+
+[requires]
+python_version = "3.10"

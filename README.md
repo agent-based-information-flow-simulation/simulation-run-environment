@@ -1,29 +1,38 @@
-# FakeNewsSimulator
+# Simulation Run Environment
 
-## Requirements
+## Table of Contents
 
-- Python 3.8
-- Following packages
-  - spade
-  - numpy
-  - networkx
-  - matplotlib
-  - flask
-  - dash
-  - plotly
-  - sklearn
-  - pandas
+- [About](#about)
+- [Getting Started](#getting_started)
+- [Usage](#usage)
 
-## How to run
+## About <a name = "about"></a>
 
-First, start the visualization server:
+Simulation run environment.
+
+## Getting Started <a name = "getting_started"></a>
+
+### Prerequisites
 
 ```
-python visualization/server.py -h
+docker
+docker-compose
 ```
 
-Then, start the simulation:
+### Installing
 
 ```
-python main.py -h
+docker-compose -f COMPOSE_FILE up
 ```
+
+For the local development use the `.dev` compose file. To run unit tests use the `.test` compose file.
+
+## Usage <a name = "usage"></a>
+
+After starting the `.dev` compose file, the server in accessible on localhost.
+* port `80` - entrypoint
+* port `8000` - translator
+* port `8001` - graph generator
+* port `8002` - simulation load balancer
+* port `27017` - mongodb
+* port `27018` - mongodb express
