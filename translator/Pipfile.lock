@@ -18,11 +18,11 @@
     "default": {
         "aasm": {
             "hashes": [
-                "sha256:740f5b16059edd4a9ddceb7cb2855e99d22b51866b6991149e4e2a31d6f1aef3",
-                "sha256:a7897317b56526dc5c3bf7f6996a60190977387536e0ff6b1e6bcbf91ce240e1"
+                "sha256:398971e91077867501d988804d88120c43cf2d1e518ee1637b5ed211a440b98d",
+                "sha256:bb333d8d47e16e4145fa4bbb8a34896c692fb1a49771ae68e2fc2f17eac86c14"
             ],
             "index": "pypi",
-            "version": "==0.0.10"
+            "version": "==0.0.11"
         },
         "anyio": {
             "hashes": [
@@ -712,11 +712,11 @@
         },
         "platformdirs": {
             "hashes": [
-                "sha256:367a5e80b3d04d2428ffa76d33f124cf11e8fff2acdaa9b43d545f5c7d661ef2",
-                "sha256:8868bbe3c3c80d42f20156f22e7131d2fb321f5bc86a2a345375c6481a67021d"
+                "sha256:1d7385c7db91728b83efd0ca99a5afb296cab9d0ed8313a45ed8ba17967ecfca",
+                "sha256:440633ddfebcc36264232365d7840a970e75e1018d15b4327d11f91909045fda"
             ],
-            "markers": "python_version >= '3.6'",
-            "version": "==2.4.0"
+            "markers": "python_version >= '3.7'",
+            "version": "==2.4.1"
         },
         "pluggy": {
             "hashes": [
