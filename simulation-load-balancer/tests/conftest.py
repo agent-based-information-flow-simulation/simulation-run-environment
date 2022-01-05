@@ -7,10 +7,14 @@ from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
 
 from src.app import get_app
-from src.settings import app_settings
+from src.settings import app_settings, graph_generator_settings, translator_settings
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
+
+
+graph_generator_settings.url = "http://fake-graph-generator"
+translator_settings.url = "http://fake-translator"
 
 
 @pytest.fixture
