@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 fastapi = {extras = ["all"], version = "*"}
 httpx = "*"
+spade = {git = "https://github.com/agent-based-information-flow-simulation/spade"}
+numpy = "*"
 
 [dev-packages]
 black = "*"
@@ -15,6 +17,7 @@ coverage = "*"
 asgi-lifespan = "*"
 pytest-asyncio = "*"
 pytest-httpx = "*"
+aioxmpp = "*"
 
 [requires]
 python_version = "3.10"
