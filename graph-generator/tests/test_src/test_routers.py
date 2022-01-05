@@ -23,7 +23,7 @@ async def test_after_sending_graph_code_response_has_graph_json(
     graph_structure = []
     graph_runner_service_mock.run_algorithm.return_value = graph_structure
     app.dependency_overrides[graph_runner_service] = lambda: graph_runner_service_mock
-    code = {"agent_code_lines": [], "graph_code_lines": []}
+    code = {"graph_code_lines": []}
 
     response = await client.post("/python", json=code)
 
@@ -38,7 +38,7 @@ async def test_after_creating_simulaton_response_has_200_status_code(
     graph_structure = []
     graph_runner_service_mock.run_algorithm.return_value = graph_structure
     app.dependency_overrides[graph_runner_service] = lambda: graph_runner_service_mock
-    code = {"agent_code_lines": [], "graph_code_lines": []}
+    code = {"graph_code_lines": []}
 
     response = await client.post("/python", json=code)
 
@@ -51,7 +51,7 @@ async def test_after_graph_runner_service_fails_response_has_500_status_code(
     graph_runner_service_mock = Mock()
     graph_runner_service_mock.run_algorithm.side_effect = Exception()
     app.dependency_overrides[graph_runner_service] = lambda: graph_runner_service_mock
-    code = {"agent_code_lines": [], "graph_code_lines": []}
+    code = {"graph_code_lines": []}
 
     response = await client.post("/python", json=code)
 
@@ -64,7 +64,7 @@ async def test_after_graph_runner_service_fails_response_has_details(
     graph_runner_service_mock = Mock()
     graph_runner_service_mock.run_algorithm.side_effect = Exception()
     app.dependency_overrides[graph_runner_service] = lambda: graph_runner_service_mock
-    code = {"agent_code_lines": [], "graph_code_lines": []}
+    code = {"graph_code_lines": []}
 
     response = await client.post("/python", json=code)
 

@@ -7,6 +7,8 @@ from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
 
 from src.app import get_app
+from src.services.graph_generator import GraphGeneratorService
+from src.services.translator import TranslatorService
 from src.settings import app_settings, graph_generator_settings, translator_settings
 
 if TYPE_CHECKING:
@@ -35,3 +37,13 @@ async def client(app: FastAPI) -> AsyncClient:
 @pytest.fixture
 def non_mocked_hosts() -> List[str]:
     return ["simulation-load-balancer"]
+
+
+@pytest.fixture
+def graph_generator_service() -> GraphGeneratorService:
+    yield GraphGeneratorService()
+
+
+@pytest.fixture
+def translator_service() -> TranslatorService:
+    yield TranslatorService()
