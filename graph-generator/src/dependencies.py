@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Callable, Type
 
 from src.services import GraphRunnerService
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from src.services import BaseService
 
 
