@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from aasm import __version__
 from starlette.responses import JSONResponse
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from aasm import PanicException
     from starlette.requests import Request
 
