@@ -14,5 +14,15 @@ class DatabaseSettings(BaseSettings):
     url: str = os.environ.get("DB_URL", "")
 
 
+class TranslatorSettings(BaseSettings):
+    url: str = os.environ.get("TRANSLATOR_URL", "")
+
+
+class GraphGeneratorSettings(BaseSettings):
+    url: str = os.environ.get("GRAPH_GENERATOR_URL", "")
+
+
 app_settings = AppSettings()
 database_settings = DatabaseSettings()
+translator_settings = TranslatorSettings()
+graph_generator_settings = GraphGeneratorSettings()

@@ -1,8 +1,7 @@
+import json
 import random as rand
 import uuid
-import json
 from types import SimpleNamespace
-
 
 NUM_TOPICS = 5
 

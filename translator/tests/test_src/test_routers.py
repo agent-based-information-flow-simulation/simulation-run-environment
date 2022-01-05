@@ -5,24 +5,30 @@ from typing import TYPE_CHECKING
 import pytest
 from starlette import status
 
-from src.settings import graph_generator_settings
-
 if TYPE_CHECKING:
     from httpx import AsyncClient
-    from pytest_httpx import HTTPXMock
 
 pytestmark = pytest.mark.asyncio
 
 
-async def test_after_creating_simulaton_response_has_simulation_id(
-    client: AsyncClient, httpx_mock: HTTPXMock
+async def test_after_sending_aasm_code_response_has_agent_code(
+    client: AsyncClient,
 ) -> None:
-    httpx_mock.add_response(
-        url=f"{graph_generator_settings.url}/graphs",
-        method="POST",
-        status_code=201,
-        json={"simulation_id": "abc123"},
-    )
+    code = {
+        "code_lines": [
+            "agent test",
+            "eagent",
+        ]
+    }
+
+    response = await client.post("/python/spade", json=code)
+
+    assert "agent_code_lines" in response.json()
+
+
+async def test_after_sending_aasm_code_response_has_graph_code(
+    client: AsyncClient,
+) -> None:
     code = {
         "code_lines": [
             "agent test",
@@ -33,20 +39,14 @@ async def test_after_creating_simulaton_response_has_simulation_id(
         ]
     }
 
-    response = await client.post("/simulations", json=code)
+    response = await client.post("/python/spade", json=code)
 
-    assert response.json() == {"simulation_id": "abc123"}
+    assert "graph_code_lines" in response.json()
 
 
-async def test_after_creating_simulaton_response_has_201_status_code(
-    client: AsyncClient, httpx_mock: HTTPXMock
+async def test_after_sending_aasm_code_response_has_200_status_code(
+    client: AsyncClient,
 ) -> None:
-    httpx_mock.add_response(
-        url=f"{graph_generator_settings.url}/graphs",
-        method="POST",
-        status_code=201,
-        json={"simulation_id": "abc123"},
-    )
     code = {
         "code_lines": [
             "agent test",
@@ -57,48 +57,6 @@ async def test_after_creating_simulaton_response_has_201_status_code(
         ]
     }
 
-    response = await client.post("/simulations", json=code)
+    response = await client.post("/python/spade", json=code)
 
-    assert response.status_code == status.HTTP_201_CREATED
-
-
-async def test_after_simulation_was_not_created_response_has_500_status_code(
-    client: AsyncClient, httpx_mock: HTTPXMock
-) -> None:
-    httpx_mock.add_response(
-        url=f"{graph_generator_settings.url}/graphs", method="POST", status_code=500
-    )
-    code = {
-        "code_lines": [
-            "agent test",
-            "eagent",
-            "graph statistical",
-            "defg test, 1, 0",
-            "egraph",
-        ]
-    }
-
-    response = await client.post("/simulations", json=code)
-
-    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-
-
-async def test_after_simulation_was_not_created_response_has_details(
-    client: AsyncClient, httpx_mock: HTTPXMock
-) -> None:
-    httpx_mock.add_response(
-        url=f"{graph_generator_settings.url}/graphs", method="POST", status_code=500
-    )
-    code = {
-        "code_lines": [
-            "agent test",
-            "eagent",
-            "graph statistical",
-            "defg test, 1, 0",
-            "egraph",
-        ]
-    }
-
-    response = await client.post("/simulations", json=code)
-
-    assert "detail" in response.json()
+    assert response.status_code == status.HTTP_200_OK

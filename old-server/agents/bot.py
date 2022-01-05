@@ -1,12 +1,12 @@
+import asyncio
 import datetime
 import random
-import asyncio
-from spade.behaviour import PeriodicBehaviour, CyclicBehaviour
-from spade.agent import Agent
-from spade.message import Message
+
 import visualization
 from agents.utils import Message as News
-
+from spade.agent import Agent
+from spade.behaviour import CyclicBehaviour, PeriodicBehaviour
+from spade.message import Message
 
 MAX_INITIAL_DELAY_SEC = 20
 MAX_SPREAD_INTERVAL_SEC = 60

@@ -16,7 +16,7 @@ async def test_after_sending_invalid_aasm_code_response_has_translator_details(
 ) -> None:
     code = {"code_lines": ["eagent"]}
 
-    response = await client.post("/simulations", json=code)
+    response = await client.post("/python/spade", json=code)
 
     assert "translator_version" in response.json()
     assert "place" in response.json()
@@ -29,6 +29,6 @@ async def test_after_sending_invalid_aasm_code_response_has_400_status_code(
 ) -> None:
     code = {"code_lines": ["eagent"]}
 
-    response = await client.post("/simulations", json=code)
+    response = await client.post("/python/spade", json=code)
 
     assert status.HTTP_400_BAD_REQUEST == response.status_code

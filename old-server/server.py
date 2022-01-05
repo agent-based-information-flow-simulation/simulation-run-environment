@@ -1,9 +1,10 @@
+import asyncio
+import uuid
+from subprocess import PIPE, STDOUT
+
 import uvicorn
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from subprocess import PIPE, STDOUT
-import uuid
-import asyncio
 
 app = FastAPI()
 cors_origins = ["http://localhost:3000"]

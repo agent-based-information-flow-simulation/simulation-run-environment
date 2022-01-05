@@ -9,5 +9,6 @@ class AgentsAssemblyCode(BaseModel):
     code_lines: List[str]
 
 
-class CreatedSimulation(BaseModel):
-    simulation_id: str
+class PythonSpadeCode(BaseModel):
+    agent_code_lines: List[str]
+    graph_code_lines: List[str]

@@ -34,23 +34,11 @@ services:
       - "27018:8081"
     restart: "no"
 
-  entrypoint:
-    build: ./entrypoint
-    container_name: entrypoint-dev
-    networks:
-      - entrypoint-net
-    ports:
-      - "80:80"
-    restart: "no"
-    volumes:
-      - entrypoint-data:/usr/local/etc/haproxy
-
   graph-generator:
     build: ./graph-generator
     container_name: graph-generator-dev
     environment:
       - COMMUNICATION_SERVER_DOMAIN=agents-sim.xyz
-      - SIMULATION_LOAD_BALANCER_URL=http://simulation-load-balancer:8000
       - PORT=8000
       - RELOAD=True
     expose:
@@ -68,16 +56,18 @@ services:
     container_name: simulation-load-balancer-dev
     environment:
       - DB_URL=mongodb://user:pass@db:27017/database
+      - GRAPH_GENERATOR_URL=http://graph-generator:8000
       - PORT=8000
       - RELOAD=True
+      - TRANSLATOR_URL=http://translator:8000
     expose:
       - 8000
     networks:
       - db-net
-      - entrypoint-net
       - graph-generator-net
+      - translator-net
     ports:
-      - "8002:8000"
+      - "80:8000"
     restart: "no"
     volumes:
       - ./simulation-load-balancer/src:/api/src
@@ -86,15 +76,12 @@ services:
     build: ./translator
     container_name: translator-dev
     environment:
-      - CLIENT_CORS_DOMAIN=http://localhost:3000
-      - GRAPH_GENERATOR_URL=http://graph-generator:8000
       - PORT=8000
       - RELOAD=True
     expose: 
       - 8000
     networks:
-      - entrypoint-net
-      - graph-generator-net
+      - translator-net
     ports:
       - "8000:8000"
     restart: "no"
@@ -103,9 +90,8 @@ services:
 
 networks:
   db-net:
-  entrypoint-net:
   graph-generator-net:
+  translator-net:
 
 volumes:
   db-data:
-  entrypoint-data:

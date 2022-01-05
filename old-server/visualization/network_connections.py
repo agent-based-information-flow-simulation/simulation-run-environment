@@ -23,9 +23,11 @@ instead of the loop with 'time.sleep' as it starts the blocking GUI loop):
 
 """
 
-import networkx as nx
-import matplotlib.pyplot as plt
 import hashlib
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
 from .server import AGENT_TYPE_STYLE
 
 
