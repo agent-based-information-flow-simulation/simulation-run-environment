@@ -1,43 +1,40 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
+from unittest.mock import Mock
 
 import pytest
 from starlette import status
 
-from src.settings import graph_generator_settings, translator_settings
+from src.dependencies import graph_generator_service, translator_service
+from src.exceptions import GraphGeneratorException, TranslatorException
 
 if TYPE_CHECKING:
+    from fastapi import FastAPI
     from httpx import AsyncClient
-    from pytest_httpx import HTTPXMock
 
 pytestmark = pytest.mark.asyncio
 
 
 async def test_after_creating_simulaton_response_has_simulation_id(
-    client: AsyncClient, httpx_mock: HTTPXMock
+    app: FastAPI, client: AsyncClient
 ) -> None:
-    httpx_mock.add_response(
-        url=f"{translator_settings.url}/python/spade",
-        method="POST",
-        status_code=200,
-        json={"agent_code_lines": [], "graph_code_lines": []},
-    )
-    httpx_mock.add_response(
-        url=f"{graph_generator_settings.url}/python",
-        method="POST",
-        status_code=200,
-        json={"graph": []},
-    )
-    code = {
-        "aasm_code_lines": [
-            "agent test",
-            "eagent",
-            "graph statistical",
-            "defg test, 1, 0",
-            "egraph",
-        ]
-    }
+    translator_service_mock = Mock()
+    translate_future = asyncio.Future()
+    translate_future.set_result(([], []))
+    translator_service_mock.translate.return_value = translate_future
+    app.dependency_overrides[translator_service] = lambda: translator_service_mock
+
+    graph_generator_service_mock = Mock()
+    generate_future = asyncio.Future()
+    generate_future.set_result([])
+    graph_generator_service_mock.generate.return_value = generate_future
+    app.dependency_overrides[
+        graph_generator_service
+    ] = lambda: graph_generator_service_mock
+
+    code = {"aasm_code_lines": []}
 
     response = await client.post("/simulations", json=code)
 
@@ -45,29 +42,23 @@ async def test_after_creating_simulaton_response_has_simulation_id(
 
 
 async def test_after_creating_simulaton_response_has_201_status_code(
-    client: AsyncClient, httpx_mock: HTTPXMock
+    app: FastAPI, client: AsyncClient
 ) -> None:
-    httpx_mock.add_response(
-        url=f"{translator_settings.url}/python/spade",
-        method="POST",
-        status_code=200,
-        json={"agent_code_lines": [], "graph_code_lines": []},
-    )
-    httpx_mock.add_response(
-        url=f"{graph_generator_settings.url}/python",
-        method="POST",
-        status_code=200,
-        json={"graph": []},
-    )
-    code = {
-        "aasm_code_lines": [
-            "agent test",
-            "eagent",
-            "graph statistical",
-            "defg test, 1, 0",
-            "egraph",
-        ]
-    }
+    translator_service_mock = Mock()
+    translate_future = asyncio.Future()
+    translate_future.set_result(([], []))
+    translator_service_mock.translate.return_value = translate_future
+    app.dependency_overrides[translator_service] = lambda: translator_service_mock
+
+    graph_generator_service_mock = Mock()
+    generate_future = asyncio.Future()
+    generate_future.set_result([])
+    graph_generator_service_mock.generate.return_value = generate_future
+    app.dependency_overrides[
+        graph_generator_service
+    ] = lambda: graph_generator_service_mock
+
+    code = {"aasm_code_lines": []}
 
     response = await client.post("/simulations", json=code)
 
@@ -75,23 +66,15 @@ async def test_after_creating_simulaton_response_has_201_status_code(
 
 
 async def test_after_simulation_was_not_created_due_to_translator_error_response_has_500_status_code(
-    client: AsyncClient, httpx_mock: HTTPXMock
+    app: FastAPI, client: AsyncClient
 ) -> None:
-    httpx_mock.add_response(
-        url=f"{translator_settings.url}/python/spade",
-        method="POST",
-        status_code=500,
-        json={},
-    )
-    code = {
-        "aasm_code_lines": [
-            "agent test",
-            "eagent",
-            "graph statistical",
-            "defg test, 1, 0",
-            "egraph",
-        ]
-    }
+    translator_service_mock = Mock()
+    translate_future = asyncio.Future()
+    translate_future.set_exception(TranslatorException(0, ""))
+    translator_service_mock.translate.side_effect = translate_future
+    app.dependency_overrides[translator_service] = lambda: translator_service_mock
+
+    code = {"aasm_code_lines": []}
 
     response = await client.post("/simulations", json=code)
 
@@ -99,23 +82,15 @@ async def test_after_simulation_was_not_created_due_to_translator_error_response
 
 
 async def test_after_simulation_was_not_created_due_to_translator_error_response_has_details(
-    client: AsyncClient, httpx_mock: HTTPXMock
+    app: FastAPI, client: AsyncClient
 ) -> None:
-    httpx_mock.add_response(
-        url=f"{translator_settings.url}/python/spade",
-        method="POST",
-        status_code=500,
-        json={},
-    )
-    code = {
-        "aasm_code_lines": [
-            "agent test",
-            "eagent",
-            "graph statistical",
-            "defg test, 1, 0",
-            "egraph",
-        ]
-    }
+    translator_service_mock = Mock()
+    translate_future = asyncio.Future()
+    translate_future.set_exception(TranslatorException(0, ""))
+    translator_service_mock.translate.side_effect = translate_future
+    app.dependency_overrides[translator_service] = lambda: translator_service_mock
+
+    code = {"aasm_code_lines": []}
 
     response = await client.post("/simulations", json=code)
 
@@ -123,29 +98,23 @@ async def test_after_simulation_was_not_created_due_to_translator_error_response
 
 
 async def test_after_simulation_was_not_created_due_to_graph_generator_error_response_has_500_status_code(
-    client: AsyncClient, httpx_mock: HTTPXMock
+    app: FastAPI, client: AsyncClient
 ) -> None:
-    httpx_mock.add_response(
-        url=f"{translator_settings.url}/python/spade",
-        method="POST",
-        status_code=200,
-        json={"agent_code_lines": [], "graph_code_lines": []},
-    )
-    httpx_mock.add_response(
-        url=f"{graph_generator_settings.url}/python",
-        method="POST",
-        status_code=500,
-        json={},
-    )
-    code = {
-        "aasm_code_lines": [
-            "agent test",
-            "eagent",
-            "graph statistical",
-            "defg test, 1, 0",
-            "egraph",
-        ]
-    }
+    translator_service_mock = Mock()
+    translate_future = asyncio.Future()
+    translate_future.set_result(([], []))
+    translator_service_mock.translate.return_value = translate_future
+    app.dependency_overrides[translator_service] = lambda: translator_service_mock
+
+    graph_generator_service_mock = Mock()
+    generate_future = asyncio.Future()
+    generate_future.set_exception(GraphGeneratorException(0, ""))
+    graph_generator_service_mock.generate.side_effect = generate_future
+    app.dependency_overrides[
+        graph_generator_service
+    ] = lambda: graph_generator_service_mock
+
+    code = {"aasm_code_lines": []}
 
     response = await client.post("/simulations", json=code)
 
@@ -153,29 +122,23 @@ async def test_after_simulation_was_not_created_due_to_graph_generator_error_res
 
 
 async def test_after_simulation_was_not_created_due_to_graph_generator_error_response_has_details(
-    client: AsyncClient, httpx_mock: HTTPXMock
+    app: FastAPI, client: AsyncClient
 ) -> None:
-    httpx_mock.add_response(
-        url=f"{translator_settings.url}/python/spade",
-        method="POST",
-        status_code=200,
-        json={"agent_code_lines": [], "graph_code_lines": []},
-    )
-    httpx_mock.add_response(
-        url=f"{graph_generator_settings.url}/python",
-        method="POST",
-        status_code=500,
-        json={},
-    )
-    code = {
-        "aasm_code_lines": [
-            "agent test",
-            "eagent",
-            "graph statistical",
-            "defg test, 1, 0",
-            "egraph",
-        ]
-    }
+    translator_service_mock = Mock()
+    translate_future = asyncio.Future()
+    translate_future.set_result(([], []))
+    translator_service_mock.translate.return_value = translate_future
+    app.dependency_overrides[translator_service] = lambda: translator_service_mock
+
+    graph_generator_service_mock = Mock()
+    generate_future = asyncio.Future()
+    generate_future.set_exception(GraphGeneratorException(0, ""))
+    graph_generator_service_mock.generate.side_effect = generate_future
+    app.dependency_overrides[
+        graph_generator_service
+    ] = lambda: graph_generator_service_mock
+
+    code = {"aasm_code_lines": []}
 
     response = await client.post("/simulations", json=code)
 
