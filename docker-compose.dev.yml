@@ -77,6 +77,11 @@ services:
     build: ./spade-instance
     container_name: spade-instance-dev
     environment:
+      - AGENT_BACKUP_URL=http://localhost:8000
+      - API_BACKUP_URL=http://simulation-load-balancer:8000
+      - BACKUP_PERIOD=15
+      - BACKUP_DELAY=5
+      - COMMUNICATION_SERVER_PASSWORD=password
       - PORT=8000
       - RELOAD=True
       - SIMULATION_LOAD_BALANCER_URL=http://simulation-load-balancer:8000
