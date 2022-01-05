@@ -1,51 +1,36 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
-
-import httpx
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
-from starlette import status
 
+from src.dependencies import graph_generator_service, translator_service
+from src.exceptions import GraphGeneratorException, TranslatorException
 from src.models import CreatedSimulation, CreateSpadeSimulation
-from src.settings import graph_generator_settings, translator_settings
+from src.services.graph_generator import GraphGeneratorService
+from src.services.translator import TranslatorService
 
 router = APIRouter()
 
 
 @router.post("/simulations", response_model=CreatedSimulation, status_code=201)
-async def create_simulation(simulation_data: CreateSpadeSimulation):
-    translator_data = {
-        "code_lines": simulation_data.aasm_code_lines,
-    }
-    async with httpx.AsyncClient(base_url=translator_settings.url) as client:
-        translator_response = await client.post("/python/spade", json=translator_data)
-    translator_response_body = translator_response.json()
+async def create_simulation(
+    simulation_data: CreateSpadeSimulation,
+    translator_service: TranslatorService = Depends(translator_service),
+    graph_generator_service: GraphGeneratorService = Depends(graph_generator_service),
+):
+    try:
+        agent_code_lines, graph_code_lines = await translator_service.translate(
+            simulation_data.aasm_code_lines
+        )
+    except TranslatorException as e:
+        raise HTTPException(500, f"Could not create a simulation (translator: {e}).")
 
-    if translator_response.status_code != status.HTTP_200_OK:
+    try:
+        graph = await graph_generator_service.generate(graph_code_lines)
+    except GraphGeneratorException as e:
         raise HTTPException(
-            500,
-            f"Could not create a simulation (translator: [{translator_response.status_code} status] {translator_response_body}).",
+            500, f"Could not create a simulation (graph generator: {e})."
         )
-
-    graph_generator_data = {
-        "agent_code_lines": translator_response_body["agent_code_lines"],
-        "graph_code_lines": translator_response_body["graph_code_lines"],
-    }
-    async with httpx.AsyncClient(base_url=graph_generator_settings.url) as client:
-        graph_generator_response = await client.post(
-            "/python", json=graph_generator_data
-        )
-    graph_generator_response_body = graph_generator_response.json()
-
-    if graph_generator_response.status_code != status.HTTP_200_OK:
-        raise HTTPException(
-            500,
-            f"Could not create a simulation (graph generator: [{graph_generator_response.status_code} status] {graph_generator_response_body}).",
-        )
-
-    agent_code_lines: List[str] = translator_response_body["agent_code_lines"]
-    graph: List[Dict[str, Any]] = graph_generator_response_body["graph"]
 
     # start the simulation
     # ...
