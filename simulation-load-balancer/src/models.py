@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import List
 
 from pydantic import BaseModel
 
 
-class CreateSpadeSimulationData(BaseModel):
-    agent_code_lines: List[str]
-    graph: List[Dict[str, Any]]
+class CreateSpadeSimulation(BaseModel):
+    aasm_code_lines: List[str]
 
 
 class CreatedSimulation(BaseModel):
