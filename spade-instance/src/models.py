@@ -7,9 +7,4 @@ from pydantic import BaseModel
 
 class CreateSimulation(BaseModel):
     agent_code_lines: List[str]
-    graph: List[Dict[str, Any]]
-
-
-class InstanceState(BaseModel):
-    state: str
-
+    agent_data: List[Dict[str, Any]]
