@@ -1,9 +1,10 @@
-import threading
 import json
-import requests
-import agents.utils
-from .server import HOST, PORT
+import threading
 
+import agents.utils
+import requests
+
+from .server import HOST, PORT
 
 URL = f"http://{HOST}:{PORT}"
 

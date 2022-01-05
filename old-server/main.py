@@ -1,16 +1,17 @@
-from asyncio import futures
+import asyncio
 import concurrent
-import time
-import sys
 import getopt
 import math
-from spade.container import Container
-from spade import quit_spade
+import sys
+import time
+from asyncio import futures
+
 import matplotlib.pyplot as plt
-from matplotlib import animation
 import visualization
 from agents import GraphCreator
-import asyncio
+from matplotlib import animation
+from spade import quit_spade
+from spade.container import Container
 
 DEFAULT_NUM_AGENTS = 80
 DEFAULT_IS_CONNECTIONS_VISUALIZATION_ON = False
@@ -44,12 +45,13 @@ def parse_cli_args():
 
     return num_agents, is_connections_visualization_on, domain
 
-import aioxmpp
 import logging
-from spade.presence import PresenceManager
+
+import aioxmpp
+import aioxmpp.ibr as ibr
 from aioxmpp.dispatcher import SimpleMessageDispatcher
 from spade.behaviour import FSMBehaviour
-import aioxmpp.ibr as ibr
+from spade.presence import PresenceManager
 
 
 # TLS is set to false

@@ -1,14 +1,15 @@
-import agents
-import random
+import asyncio
 import datetime
 import json
-import asyncio
-from spade.behaviour import PeriodicBehaviour, CyclicBehaviour
-from spade.agent import Agent
-from spade.message import Message
+import random
+
+import agents
 import visualization
 from agents.utils import Message as News
 from agents.utils import calculate_accept
+from spade.agent import Agent
+from spade.behaviour import CyclicBehaviour, PeriodicBehaviour
+from spade.message import Message
 
 INIT_SUSCEPTIBILITY = 50  # TBD
 DEBUNK_SUS_BOUNDRY = 20

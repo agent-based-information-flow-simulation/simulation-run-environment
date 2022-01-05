@@ -1,12 +1,14 @@
-import random
 import json
-import numpy as np
+import random
 import traceback
+
+import numpy as np
 from sklearn.neighbors import KDTree
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
-from .common import Common
+
 from .bot import Bot
+from .common import Common
 from .utils.message import NUM_TOPICS
 
 
