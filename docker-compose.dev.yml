@@ -65,12 +65,30 @@ services:
     networks:
       - db-net
       - graph-generator-net
+      - spade-instance-net
       - translator-net
     ports:
       - "80:8000"
     restart: "no"
     volumes:
       - ./simulation-load-balancer/src:/api/src
+
+  spade-instance:
+    build: ./spade-instance
+    container_name: spade-instance-dev
+    environment:
+      - PORT=8000
+      - RELOAD=True
+      - SIMULATION_LOAD_BALANCER_URL=http://simulation-load-balancer:8000
+    expose:
+      - 8000
+    networks:
+      - spade-instance-net
+    ports:
+      - "9000:8000"
+    restart: "no"
+    volumes:
+      - ./spade-instance/src:/api/src
 
   translator:
     build: ./translator
@@ -91,6 +109,7 @@ services:
 networks:
   db-net:
   graph-generator-net:
+  spade-instance-net:
   translator-net:
 
 volumes:
