@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import copy
 import datetime
@@ -5,13 +7,12 @@ import json
 import logging
 import os
 import random
-from typing import Any, Coroutine, Dict, List
+from typing import TYPE_CHECKING, Any, Coroutine, Dict, List
 
 import aioxmpp
 import httpx
 import numpy
 import spade
-from spade.agent import Agent
 from spade.container import Container
 
 from src.settings import (
@@ -21,6 +22,10 @@ from src.settings import (
     simulation_settings,
 )
 from src.status import Status
+
+if TYPE_CHECKING:
+    from spade.agent import Agent
+    from aioxmpp.structs import JID
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=os.environ.get("LOG_LEVEL_SIMULATION", "INFO"))
@@ -121,7 +126,7 @@ def connect_agents(agents: List[Agent]) -> None:
             future.result()
 
 
-def setup_agents(agents: List[Agent]) -> Dict[str, int]:
+def setup_agents(agents: List[Agent]) -> Dict[JID, int]:
     agent_num_behaviours = {}
     for agent in agents:
         num_behaviours = setup(agent)
@@ -131,7 +136,7 @@ def setup_agents(agents: List[Agent]) -> Dict[str, int]:
 
 
 async def send_status(
-    agents: List[Agent], agent_num_behaviours: Dict[str, int]
+    agents: List[Agent], agent_num_behaviours: Dict[JID, int]
 ) -> Coroutine[Any, Any, None]:
     num_alive_agents = sum(
         agent.is_alive() and len(agent.behaviours) == agent_num_behaviours[agent.jid]
