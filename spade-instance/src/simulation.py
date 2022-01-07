@@ -83,7 +83,7 @@ def setup(agent: Agent) -> int:
 
 def initialize_agents(
     agent_code_lines: List[str], agent_data: List[Dict[str, Any]]
-) -> List[spade.agent.Agent]:
+) -> List[Agent]:
     code_without_imports = list(
         filter(lambda line: not line.startswith("import"), agent_code_lines)
     )
