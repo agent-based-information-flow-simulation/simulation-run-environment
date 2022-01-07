@@ -63,6 +63,14 @@ services:
 
   spade-instance:
     build: ./spade-instance
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2G"
+        reservations:
+          cpus: "2"
+          memory: "256M"
     environment:
       - AGENT_BACKUP_URL=http://localhost:8000/simulation/agent_data
       - API_BACKUP_URL=http://simulation-load-balancer:8000
@@ -71,6 +79,7 @@ services:
       - COMMUNICATION_SERVER_PASSWORD=password
       - INSTANCE_STATUS_URL=http://localhost:8000/instance/status
       - LOG_LEVEL_HANDLERS=INFO
+      - LOG_LEVEL_UVICORN_ACCESS=WARNING
       - LOG_LEVEL_ROUTERS=INFO
       - LOG_LEVEL_SIMULATION=INFO
       - LOG_LEVEL_STATE=INFO
