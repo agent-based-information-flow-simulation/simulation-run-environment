@@ -16,10 +16,13 @@ logger.setLevel(level=os.environ.get("LOG_LEVEL_HANDLERS", "INFO"))
 
 
 def simulation_shutdown_handler() -> None:
+    logger.info("Shutting down simulation")
     try:
         state.kill_simulation_process()
     except SimulationException as e:
         logger.info(str(e))
+    logger.info("Simulation shutdown complete")
+    
 
 
 @repeat_every(
