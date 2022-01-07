@@ -30,7 +30,7 @@ async def simulation_shutdown_handler() -> Coroutine[Any, Any, None]:
     raise_exceptions=True,
     logger=logger,
 )
-async def instance_state_handler() -> Coroutine[Any, Any, None]:    
+async def instance_state_handler() -> Coroutine[Any, Any, None]:
     api_memory_usage = psutil.Process().memory_info().rss / 1024 ** 2
     simulation_memory_usage = await state.get_simulation_memory_usage()
     status, simulation_id, num_agents, broken_agents = await state.get_state()

@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import copy
 import datetime
-import orjson
 import logging
 import os
 import random
@@ -12,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Coroutine, Dict, List
 import aioxmpp
 import httpx
 import numpy
+import orjson
 import spade
 from spade.container import Container
 
@@ -155,6 +155,7 @@ async def send_status(
     logger.info(f"Sending status to spade api: {instance_status}")
     async with httpx.AsyncClient() as client:
         await client.post(instance_settings.status_url, json=instance_status)
+
 
 async def run_simulation(
     agent_code_lines: List[str], agent_data: List[Dict[str, Any]]

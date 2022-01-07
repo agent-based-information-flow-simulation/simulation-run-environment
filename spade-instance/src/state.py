@@ -96,7 +96,7 @@ class State:
         async with self.mutex:
             if self.simulation_process is None:
                 return 0.0
-            
+
             return (
                 psutil.Process(self.simulation_process.pid).memory_info().rss
                 / 1024 ** 2
