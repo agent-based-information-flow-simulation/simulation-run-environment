@@ -15,5 +15,5 @@ class CreateSimulation(BaseModel):
 
 class InstanceStatus(BaseModel):
     status: Status
-    num_alive_agents: int
     num_agents: int
+    broken_agents: List[str]

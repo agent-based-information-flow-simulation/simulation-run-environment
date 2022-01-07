@@ -30,15 +30,15 @@ async def simulation_shutdown_handler() -> Coroutine[Any, Any, None]:
     logger=logger,
 )
 async def instance_state_handler() -> Coroutine[Any, Any, None]:
-    status, simulation_id, num_agents, num_alive_agents = await state.get_state()
+    status, simulation_id, num_agents, broken_agents = await state.get_state()
     instance_state = {
         "status": status.name,
         "simulation_id": simulation_id,
         "num_agents": num_agents,
-        "num_alive_agents": num_alive_agents,
+        "broken_agents": broken_agents,
     }
-    logger.info(f"Sending state to simulation load balancer: {instance_state}")
     url = f"{simulation_load_balancer_settings.url}/instances/{instance_settings.id}/state"
+    logger.info(f"Sending state to simulation load balancer ({url}): {instance_state}")
     try:
         async with httpx.AsyncClient() as client:
             await client.put(url, json=instance_state)

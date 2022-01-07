@@ -59,7 +59,7 @@ async def update_active_instance_status(instance_status: InstanceStatus):
         await state.update_active_state(
             instance_status.status,
             instance_status.num_agents,
-            instance_status.num_alive_agents,
+            instance_status.broken_agents,
         )
     except SimulationException as e:
         raise HTTPException(400, str(e))

@@ -24,27 +24,29 @@ class State:
         self.simulation_id: str | None = None
         self.status: Status = Status.IDLE
         self.num_agents: int = 0
-        self.num_alive_agents: int = 0
+        self.broken_agents: List[str] = []
 
     async def update_active_state(
-        self, status: Status, num_agents: int, num_alive_agents: int
+        self, status: Status, num_agents: int, broken_agents: List[str]
     ) -> Coroutine[Any, Any, None]:
-        logger.debug(f"Setting state: {status}, {num_agents}, {num_alive_agents}")
+        logger.debug(f"Setting state: {status}, {num_agents}, {broken_agents}")
         async with self.mutex:
             if self.status == status.IDLE:
                 raise SimulationException(self.status, "Simulation is not running.")
             self.status = status
             self.num_agents = num_agents
-            self.num_alive_agents = num_alive_agents
+            self.broken_agents = broken_agents
 
-    async def get_state(self) -> Coroutine[Any, Any, Tuple[Status, str, int, int]]:
+    async def get_state(
+        self,
+    ) -> Coroutine[Any, Any, Tuple[Status, str, int, List[str]]]:
         logger.debug("Getting state")
         async with self.mutex:
             return (
                 self.status,
                 self.simulation_id,
                 self.num_agents,
-                self.num_alive_agents,
+                self.broken_agents,
             )
 
     async def get_simulation_id(self) -> Coroutine[Any, Any, str]:
@@ -81,7 +83,7 @@ class State:
             self.status = Status.IDLE
             self.simulation_id = None
             self.num_agents = 0
-            self.num_alive_agents = 0
+            self.broken_agents = []
             self.simulation_process.kill()
             self.simulation_process = None
 

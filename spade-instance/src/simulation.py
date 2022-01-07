@@ -138,15 +138,16 @@ def setup_agents(agents: List[Agent]) -> Dict[JID, int]:
 async def send_status(
     agents: List[Agent], agent_num_behaviours: Dict[JID, int]
 ) -> Coroutine[Any, Any, None]:
-    num_alive_agents = sum(
-        agent.is_alive() and len(agent.behaviours) == agent_num_behaviours[agent.jid]
+    broken_agents = [
+        str(agent.jid)
         for agent in agents
-    )
-
+        if not agent.is_alive()
+        or len(agent.behaviours) != agent_num_behaviours[agent.jid]
+    ]
     instance_status = {
         "status": Status.RUNNING.name,
-        "num_alive_agents": num_alive_agents,
         "num_agents": len(agents),
+        "broken_agents": broken_agents,
     }
     logger.info(f"Sending status to spade api: {instance_status}")
     async with httpx.AsyncClient() as client:
