@@ -42,15 +42,6 @@ services:
       - "80:8000"
 
   spade-instance:
-    build: ./spade-instance
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: "2G"
-        reservations:
-          cpus: "2"
-          memory: "256M"
     environment:
       - AGENT_BACKUP_URL=http://localhost:8000/simulation/agent_data
       - API_BACKUP_URL=http://simulation-load-balancer:8000
