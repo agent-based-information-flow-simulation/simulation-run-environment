@@ -1,0 +1,86 @@
+version: '3.9'
+
+services:
+  db:
+    environment:
+      - MONGODB_ROOT_USER=root
+      - MONGODB_ROOT_PASSWORD=root
+      - MONGODB_USERNAME=user
+      - MONGODB_PASSWORD=pass
+      - MONGODB_DATABASE=database
+    image: bitnami/mongodb:5.0.5-debian-10-r16
+    networks:
+      - db-net
+    volumes:
+      - db-data:/bitnami/mongodb
+
+  graph-generator:
+    build: ./graph-generator
+    environment:
+      - COMMUNICATION_SERVER_DOMAIN=cs_entrypoint
+      - PORT=8000
+      - RELOAD=False
+    image: madpeh/sre-graph-generator
+    networks:
+      - graph-generator-net
+
+  simulation-load-balancer:
+    build: ./simulation-load-balancer
+    environment:
+      - DB_URL=mongodb://user:pass@db:27017/database
+      - GRAPH_GENERATOR_URL=http://graph-generator:8000
+      - PORT=8000
+      - RELOAD=False
+      - TRANSLATOR_URL=http://translator:8000
+    image: madpeh/sre-simulation-load-balancer
+    networks:
+      - db-net
+      - graph-generator-net
+      - spade-instance-net
+      - translator-net
+    ports:
+      - "80:8000"
+
+  spade-instance:
+    build: ./spade-instance
+    environment:
+      - AGENT_BACKUP_URL=http://localhost:8000/simulation/agent_data
+      - API_BACKUP_URL=http://simulation-load-balancer:8000
+      - BACKUP_PERIOD=15
+      - BACKUP_DELAY=5
+      - COMMUNICATION_SERVER_PASSWORD=password
+      - INSTANCE_STATUS_URL=http://localhost:8000/instance/status
+      - LOG_LEVEL_HANDLERS=INFO
+      - LOG_LEVEL_ROUTERS=INFO
+      - LOG_LEVEL_SIMULATION=INFO
+      - LOG_LEVEL_STATE=INFO
+      - NUM_CONCURRENT_REGISTRATION=50
+      - PORT=8000
+      - RELOAD=True
+      - SIMULATION_LOAD_BALANCER_URL=http://simulation-load-balancer:8000
+      - SIMULATION_LOAD_BALANCER_ANNOUNCEMENT_PERIOD=10
+    image: madpeh/sre-spade-instance
+    networks:
+      - spade-instance-net
+      - external-sre-cs-network
+
+  translator:
+    build: ./translator
+    environment:
+      - PORT=8000
+      - RELOAD=False
+    image: madpeh/sre-translator
+    networks:
+      - translator-net
+
+networks:
+  db-net:
+  graph-generator-net:
+  spade-instance-net:
+  translator-net:
+  external-sre-cs-network:
+    external: true
+    name: sre-cs
+
+volumes:
+  db-data:
