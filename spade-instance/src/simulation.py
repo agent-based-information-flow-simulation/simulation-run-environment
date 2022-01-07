@@ -31,6 +31,31 @@ logger = logging.getLogger(__name__)
 logger.setLevel(level=os.environ.get("LOG_LEVEL_SIMULATION", "INFO"))
 
 
+def initialize_agents(
+    agent_code_lines: List[str], agent_data: List[Dict[str, Any]]
+) -> List[Agent]:
+    code_without_imports = list(
+        filter(lambda line: not line.startswith("import"), agent_code_lines)
+    )
+    exec("\n".join(code_without_imports))
+
+    agents = []
+    for agent_data_dict in agent_data:
+        agent_type = agent_data_dict["type"]
+        del agent_data_dict["type"]
+        agent = locals()[agent_type](
+            password=communication_server_settings.password,
+            backup_url=backup_settings.agent_backup_url,
+            backup_period=backup_settings.period,
+            backup_delay=backup_settings.delay,
+            logger=logger,
+            **agent_data_dict,
+        )
+        agents.append(agent)
+
+    return agents
+
+
 # https://github.com/agent-based-information-flow-simulation/spade/blob/6a857c2ae0a86b3bdfd20ccfcd28a11e1c6db81e/spade/agent.py#L171
 # TLS is set to false
 async def async_register(agent: Agent) -> Coroutine[Any, Any, None]:
@@ -71,6 +96,21 @@ async def async_connect(agent: Agent) -> Coroutine[Any, Any, None]:
     await agent._hook_plugin_after_connection()
 
 
+def connect_agents(agents: List[Agent]) -> None:
+    num_concurrent_connections = min(
+        len(agents), simulation_settings.num_concurrent_registration
+    )
+    for agent in zip(*[iter(agents)] * num_concurrent_connections):
+        futures = [
+            asyncio.run_coroutine_threadsafe(
+                async_connect(agent), loop=Container().loop
+            )
+            for agent in agent
+        ]
+        for future in futures:
+            future.result()
+
+
 # https://github.com/agent-based-information-flow-simulation/spade/blob/6a857c2ae0a86b3bdfd20ccfcd28a11e1c6db81e/spade/agent.py#L137
 # setup the agents after they are connected
 def setup(agent: Agent) -> int:
@@ -87,46 +127,6 @@ def setup(agent: Agent) -> int:
             behaviour.start()
 
     return num_behaviours
-
-
-def initialize_agents(
-    agent_code_lines: List[str], agent_data: List[Dict[str, Any]]
-) -> List[Agent]:
-    code_without_imports = list(
-        filter(lambda line: not line.startswith("import"), agent_code_lines)
-    )
-    exec("\n".join(code_without_imports))
-
-    agents = []
-    for agent_data_dict in agent_data:
-        agent_type = agent_data_dict["type"]
-        del agent_data_dict["type"]
-        agent = locals()[agent_type](
-            password=communication_server_settings.password,
-            backup_url=backup_settings.agent_backup_url,
-            backup_period=backup_settings.period,
-            backup_delay=backup_settings.delay,
-            logger=logger,
-            **agent_data_dict,
-        )
-        agents.append(agent)
-
-    return agents
-
-
-def connect_agents(agents: List[Agent]) -> None:
-    num_concurrent_connections = min(
-        len(agents), simulation_settings.num_concurrent_registration
-    )
-    for agent in zip(*[iter(agents)] * num_concurrent_connections):
-        futures = [
-            asyncio.run_coroutine_threadsafe(
-                async_connect(agent), loop=Container().loop
-            )
-            for agent in agent
-        ]
-        for future in futures:
-            future.result()
 
 
 def setup_agents(agents: List[Agent]) -> Dict[JID, int]:
