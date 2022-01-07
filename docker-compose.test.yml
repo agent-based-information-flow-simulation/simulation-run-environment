@@ -15,6 +15,13 @@ services:
     container_name: simulation-load-balancer-test
     restart: "no"
 
+  spade-instance:
+    build:
+      context: ./spade-instance
+      dockerfile: Dockerfile.test
+    container_name: spade-instance-test
+    restart: "no"
+
   translator:
     build:
       context: ./translator
