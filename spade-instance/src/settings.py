@@ -30,7 +30,7 @@ class InstanceSettings(BaseSettings):
 
 
 class SimulationSettings(BaseSettings):
-    num_concurrent_registrations: int = int(
+    num_concurrent_registration: int = int(
         os.environ.get("NUM_CONCURRENT_REGISTRATION", 1)
     )
 

@@ -108,7 +108,7 @@ def initialize_agents(
 
 def connect_agents(agents: List[Agent]) -> None:
     num_concurrent_connections = min(
-        len(agents), simulation_settings.num_concurrent_registrations
+        len(agents), simulation_settings.num_concurrent_registration
     )
     for agent in zip(*[iter(agents)] * num_concurrent_connections):
         futures = [
