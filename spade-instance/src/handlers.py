@@ -38,6 +38,8 @@ async def load_balancer_status_handler() -> Coroutine[Any, Any, None]:
     logger.info(f"Sending status to simulation load balancer: {instance_status}")
     try:
         async with httpx.AsyncClient() as client:
-            await client.post(simulation_load_balancer_settings.url, json=instance_status)
+            await client.post(
+                simulation_load_balancer_settings.url, json=instance_status
+            )
     except Exception as e:
         logger.warn(f"Error sending status to simulation load balancer: {e}")
