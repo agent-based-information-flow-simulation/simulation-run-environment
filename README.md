@@ -20,16 +20,14 @@ docker-compose
 ```
 
 ### Installing
-
+Use the `server.sh` utility script.
 ```
-docker-compose -f COMPOSE_FILE up
+./server.sh help
 ```
-
-For the local development use the `.dev` compose file. To run unit tests use the `.test` compose file.
 
 ## Usage <a name = "usage"></a>
 
-After starting the `.dev` compose file, the server in accessible on localhost.
+After starting the `.dev.yml` compose file, the server in accessible on localhost.
 * port `80` - simulation load balancer
 * port `8000` - translator
 * port `8001` - graph generator
