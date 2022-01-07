@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import datetime
-import json
+import orjson
 import logging
 import os
 import random
@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(level=os.environ.get("LOG_LEVEL_SIMULATION", "INFO"))
 
 
+# https://github.com/agent-based-information-flow-simulation/spade/blob/6a857c2ae0a86b3bdfd20ccfcd28a11e1c6db81e/spade/agent.py#L171
 # TLS is set to false
 async def async_register(agent: Agent) -> Coroutine[Any, Any, None]:
     metadata = aioxmpp.make_security_layer(
@@ -43,6 +44,7 @@ async def async_register(agent: Agent) -> Coroutine[Any, Any, None]:
     await aioxmpp.ibr.register(stream, query)
 
 
+# https://github.com/agent-based-information-flow-simulation/spade/blob/6a857c2ae0a86b3bdfd20ccfcd28a11e1c6db81e/spade/agent.py#L93
 # TLS is set to false
 # register and connect client
 async def async_connect(agent: Agent) -> Coroutine[Any, Any, None]:
@@ -69,7 +71,8 @@ async def async_connect(agent: Agent) -> Coroutine[Any, Any, None]:
     await agent._hook_plugin_after_connection()
 
 
-# separate function to setup the agents after they are connected
+# https://github.com/agent-based-information-flow-simulation/spade/blob/6a857c2ae0a86b3bdfd20ccfcd28a11e1c6db81e/spade/agent.py#L137
+# setup the agents after they are connected
 def setup(agent: Agent) -> int:
     agent.setup()
     agent._alive.set()
@@ -152,7 +155,6 @@ async def send_status(
     logger.info(f"Sending status to spade api: {instance_status}")
     async with httpx.AsyncClient() as client:
         await client.post(instance_settings.status_url, json=instance_status)
-
 
 async def run_simulation(
     agent_code_lines: List[str], agent_data: List[Dict[str, Any]]
