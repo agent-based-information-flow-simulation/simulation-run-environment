@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "858703206e3e3c7bf296ac5c137d132079e4351eaa08c946cb0641e0df498c87"
+            "sha256": "586ccb876ccef7fd81015067c8356c0bb0211090de20d5ec289780c9731a7913"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -266,11 +266,11 @@
                 "all"
             ],
             "hashes": [
-                "sha256:21d03979b5336375c66fa5d1f3126c6beca650d5d2166fbb78345a30d33c8d06",
-                "sha256:5367226c7bcd7bfb2e17edaf225fd9a983095b1372281e9a3eb661336fb93748"
+                "sha256:2b5ac0ae89c80b40d1dd4b2ea0bb1f78d7c4affd3644d080bf050f084759fff2",
+                "sha256:a78eca6b084de9667f2d5f37e2ae297270e5a119cd01c2f04815795da92fc87f"
             ],
             "index": "pypi",
-            "version": "==0.70.1"
+            "version": "==0.71.0"
         },
         "fastapi-utils": {
             "hashes": [
@@ -646,6 +646,7 @@
                 "sha256:fa8e3d0f0466b7d771a8f067bd8961bc17ca6ea4c89a91cd34d6648e6b1d1e47",
                 "sha256:fc7e62edbc7ece95779a034d9e206d7ba9e2b638cc548fd3a82dc5225f656625"
             ],
+            "index": "pypi",
             "version": "==3.6.5"
         },
         "psutil": {
@@ -905,7 +906,7 @@
         },
         "spade": {
             "git": "https://github.com/agent-based-information-flow-simulation/spade",
-            "ref": "6a857c2ae0a86b3bdfd20ccfcd28a11e1c6db81e"
+            "ref": "101762e025bfa191d99a564b1393899860af3842"
         },
         "sqlalchemy": {
             "hashes": [
@@ -951,11 +952,11 @@
         },
         "starlette": {
             "hashes": [
-                "sha256:38eb24bf705a2c317e15868e384c1b8a12ca396e5a3c3a003db7e667c43f939f",
-                "sha256:e1904b5d0007aee24bdd3c43994be9b3b729f4f58e740200de1d623f8c3a8870"
+                "sha256:26a18cbda5e6b651c964c12c88b36d9898481cd428ed6e063f5f29c418f73050",
+                "sha256:57eab3cc975a28af62f6faec94d355a410634940f10b30d68d31cb5ec1b44ae8"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==0.16.0"
+            "version": "==0.17.1"
         },
         "timeago": {
             "hashes": [
@@ -1369,6 +1370,13 @@
             ],
             "index": "pypi",
             "version": "==5.10.1"
+        },
+        "mem-top": {
+            "hashes": [
+                "sha256:ba1b9013e2f3cbb06825db1aa6a8e29a14513fad8aade6bc813232bf78996b2c"
+            ],
+            "index": "pypi",
+            "version": "==0.1.6"
         },
         "mypy-extensions": {
             "hashes": [

@@ -6,11 +6,12 @@ name = "pypi"
 [packages]
 fastapi = {extras = ["all"], version = "*"}
 httpx = "*"
-spade = {git = "https://github.com/agent-based-information-flow-simulation/spade"}
 numpy = "*"
 fastapi-utils = "*"
 aioxmpp = "*"
 psutil = "*"
+spade = {ref = "disable-trace-store", git = "https://github.com/agent-based-information-flow-simulation/spade"}
+orjson = "*"
 
 [dev-packages]
 black = "*"
@@ -20,6 +21,7 @@ coverage = "*"
 asgi-lifespan = "*"
 pytest-asyncio = "*"
 pytest-httpx = "*"
+mem-top = "*"
 
 [requires]
 python_version = "3.9"
