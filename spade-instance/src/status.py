@@ -5,5 +5,6 @@ from enum import Enum
 
 class Status(Enum):
     IDLE = "IDLE"
+    DEAD = "DEAD"
     STARTING = "STARTING"
     RUNNING = "RUNNING"

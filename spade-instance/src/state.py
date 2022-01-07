@@ -22,11 +22,17 @@ logger.setLevel(level=os.environ.get("LOG_LEVEL_STATE", "INFO"))
 class State:
     def __init__(self):
         self.mutex: Lock = asyncio.Lock()
+        self.status: Status = Status.IDLE
         self.simulation_process: Process | None = None
         self.simulation_id: str | None = None
-        self.status: Status = Status.IDLE
         self.num_agents: int = 0
         self.broken_agents: List[str] = []
+
+    def _clean_state(self) -> None:
+        self.simulation_process = None
+        self.simulation_id = None
+        self.num_agents = 0
+        self.broken_agents = []
 
     async def update_active_state(
         self, status: Status, num_agents: int, broken_agents: List[str]
@@ -66,15 +72,15 @@ class State:
             f"Starting simulation {simulation_id}, state: {await self.get_state()}"
         )
         async with self.mutex:
-            if self.status != Status.IDLE:
-                raise SimulationException(self.status, "Simulation is already running.")
+            if self.status in (Status.IDLE, Status.DEAD):
+                self.status = Status.STARTING
+                self.simulation_id = simulation_id
+                self.simulation_process = Process(
+                    target=main, args=(agent_code_lines, agent_data)
+                )
+                self.simulation_process.start()
 
-            self.status = Status.STARTING
-            self.simulation_id = simulation_id
-            self.simulation_process = Process(
-                target=main, args=(agent_code_lines, agent_data)
-            )
-            self.simulation_process.start()
+            raise SimulationException(self.status, "Simulation is already running.")
 
     async def kill_simulation_process(self) -> Coroutine[Any, Any, None]:
         logger.debug(f"Killing simulation, state: {await self.get_state()}")
@@ -83,24 +89,35 @@ class State:
                 raise SimulationException(self.status, "Simulation is not running.")
 
             self.status = Status.IDLE
-            self.simulation_id = None
-            self.num_agents = 0
-            self.broken_agents = []
             self.simulation_process.kill()
-            self.simulation_process = None
+            self._clean_state()
 
     async def get_simulation_memory_usage(self) -> Coroutine[Any, Any, float]:
         logger.debug(
             f"Getting simulation memory usage, state: {await self.get_state()}"
         )
         async with self.mutex:
-            if self.simulation_process is None:
-                return 0.0
+            if (
+                self.simulation_process is not None
+                and self.simulation_process.is_alive()
+            ):
+                return (
+                    psutil.Process(self.simulation_process.pid).memory_info().rss
+                    / 1024 ** 2
+                )
 
-            return (
-                psutil.Process(self.simulation_process.pid).memory_info().rss
-                / 1024 ** 2
-            )
+            return 0.0
+
+    async def verify_process(self) -> Coroutine[Any, Any, None]:
+        logger.debug(f"Verify process state: {await self.get_state()}")
+        async with self.mutex:
+            if (
+                self.simulation_process is not None
+                and not self.simulation_process.is_alive()
+            ):
+                logger.warning("Simulation process is dead")
+                self.status = Status.DEAD
+                self._clean_state()
 
 
 state = State()

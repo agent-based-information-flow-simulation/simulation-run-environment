@@ -27,7 +27,7 @@ async def simulation_shutdown_handler() -> Coroutine[Any, Any, None]:
 
 @repeat_every(
     seconds=simulation_load_balancer_settings.announcement_period,
-    raise_exceptions=True,
+    raise_exceptions=False,
     logger=logger,
 )
 async def instance_state_handler() -> Coroutine[Any, Any, None]:
@@ -49,3 +49,12 @@ async def instance_state_handler() -> Coroutine[Any, Any, None]:
             await client.put(url, json=instance_state)
     except Exception as e:
         logger.warn(f"Error while sending state to simulation load balancer: {e}")
+
+
+@repeat_every(
+    seconds=instance_settings.process_verification_period,
+    raise_exceptions=False,
+    logger=logger,
+)
+async def simulation_process_handler() -> Coroutine[Any, Any, None]:
+    await state.verify_process()
