@@ -4,7 +4,15 @@ from typing import Any, Dict, List
 
 from pydantic import BaseModel
 
+from src.status import Status
+
 
 class CreateSimulation(BaseModel):
     agent_code_lines: List[str]
     agent_data: List[Dict[str, Any]]
+
+
+class InstanceStatus(BaseModel):
+    status: Status
+    num_alive_agents: int
+    num_agents: int
