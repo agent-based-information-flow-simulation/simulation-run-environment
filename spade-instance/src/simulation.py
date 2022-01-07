@@ -107,10 +107,10 @@ def initialize_agents(
 
 
 def connect_agents(agents: List[Agent]) -> None:
-    num_conncurrent_connections = min(
+    num_concurrent_connections = min(
         len(agents), simulation_settings.num_concurrent_registrations
     )
-    for agent in zip(*[iter(agents)] * num_conncurrent_connections):
+    for agent in zip(*[iter(agents)] * num_concurrent_connections):
         futures = [
             asyncio.run_coroutine_threadsafe(
                 async_connect(agent), loop=Container().loop
