@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(level=os.environ.get("LOG_LEVEL_HANDLERS", "INFO"))
 
 
-def simulation_shutdown_handler() -> None:
+async def simulation_shutdown_handler() -> Coroutine[Any, Any, None]:
     logger.info("Shutting down simulation")
     try:
-        state.kill_simulation_process()
+        await state.kill_simulation_process()
     except SimulationException as e:
         logger.info(str(e))
     logger.info("Simulation shutdown complete")
@@ -31,7 +31,7 @@ def simulation_shutdown_handler() -> None:
     logger=logger,
 )
 async def instance_state_handler() -> Coroutine[Any, Any, None]:
-    status, simulation_id, num_agents, num_alive_agents = state.get_state()
+    status, simulation_id, num_agents, num_alive_agents = await state.get_state()
     instance_state = {
         "status": status.name,
         "simulation_id": simulation_id,
