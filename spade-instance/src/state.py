@@ -22,7 +22,7 @@ class State:
         self.num_agents: int = 0
         self.num_alive_agents: int = 0
 
-    def update_running_state(
+    def update_active_state(
         self, status: Status, num_agents: int, num_alive_agents: int
     ) -> None:
         logger.debug(f"Setting state: {status}, {num_agents}, {num_alive_agents}")

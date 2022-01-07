@@ -48,10 +48,10 @@ async def backup_agent_data(body: Dict[Any, Any]):
 
 
 @router.post("/instance/status", status_code=201)
-async def update_instance_status(instance_status: InstanceStatus):
-    logger.debug(f"Update instance state: {instance_status}")
+async def update_active_instance_status(instance_status: InstanceStatus):
+    logger.debug(f"Update active instance state: {instance_status}")
     try:
-        state.update_running_state(
+        state.update_active_state(
             instance_status.status,
             instance_status.num_agents,
             instance_status.num_alive_agents,
