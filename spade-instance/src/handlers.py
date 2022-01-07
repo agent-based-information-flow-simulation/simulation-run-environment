@@ -5,6 +5,7 @@ import os
 from typing import Any, Coroutine
 
 import httpx
+import psutil
 from fastapi_utils.tasks import repeat_every
 
 from src.exceptions import SimulationException
@@ -29,13 +30,17 @@ async def simulation_shutdown_handler() -> Coroutine[Any, Any, None]:
     raise_exceptions=True,
     logger=logger,
 )
-async def instance_state_handler() -> Coroutine[Any, Any, None]:
+async def instance_state_handler() -> Coroutine[Any, Any, None]:    
+    api_memory_usage = psutil.Process().memory_info().rss / 1024 ** 2
+    simulation_memory_usage = await state.get_simulation_memory_usage()
     status, simulation_id, num_agents, broken_agents = await state.get_state()
     instance_state = {
         "status": status.name,
         "simulation_id": simulation_id,
         "num_agents": num_agents,
         "broken_agents": broken_agents,
+        "api_memory_usage_MiB": api_memory_usage,
+        "simulation_memory_usage_MiB": simulation_memory_usage,
     }
     url = f"{simulation_load_balancer_settings.url}/instances/{instance_settings.id}/state"
     logger.info(f"Sending state to simulation load balancer ({url}): {instance_state}")

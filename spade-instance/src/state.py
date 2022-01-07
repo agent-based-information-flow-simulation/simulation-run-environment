@@ -6,6 +6,8 @@ import os
 from multiprocessing import Process
 from typing import TYPE_CHECKING, Any, Coroutine, Dict, List, Tuple
 
+import psutil
+
 from src.exceptions import SimulationException
 from src.simulation import main
 from src.status import Status
@@ -86,6 +88,19 @@ class State:
             self.broken_agents = []
             self.simulation_process.kill()
             self.simulation_process = None
+
+    async def get_simulation_memory_usage(self) -> Coroutine[Any, Any, float]:
+        logger.debug(
+            f"Getting simulation memory usage, state: {await self.get_state()}"
+        )
+        async with self.mutex:
+            if self.simulation_process is None:
+                return 0.0
+            
+            return (
+                psutil.Process(self.simulation_process.pid).memory_info().rss
+                / 1024 ** 2
+            )
 
 
 state = State()

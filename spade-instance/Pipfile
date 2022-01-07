@@ -10,6 +10,7 @@ spade = {git = "https://github.com/agent-based-information-flow-simulation/spade
 numpy = "*"
 fastapi-utils = "*"
 aioxmpp = "*"
+psutil = "*"
 
 [dev-packages]
 black = "*"
