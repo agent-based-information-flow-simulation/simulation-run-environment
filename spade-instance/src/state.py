@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-
+import asyncio
 import logging
 import os
 from multiprocessing import Process
@@ -9,8 +9,6 @@ from typing import TYPE_CHECKING, Any, Coroutine, Dict, List, Tuple
 from src.exceptions import SimulationException
 from src.simulation import main
 from src.status import Status
-
-import asyncio
 
 if TYPE_CHECKING:
     from asyncio.locks import Lock
@@ -42,17 +40,27 @@ class State:
     async def get_state(self) -> Coroutine[Any, Any, Tuple[Status, str, int, int]]:
         logger.debug("Getting state")
         async with self.mutex:
-            return self.status, self.simulation_id, self.num_agents, self.num_alive_agents
-        
+            return (
+                self.status,
+                self.simulation_id,
+                self.num_agents,
+                self.num_alive_agents,
+            )
+
     async def get_simulation_id(self) -> Coroutine[Any, Any, str]:
         logger.debug("Getting simulation id")
         async with self.mutex:
             return self.simulation_id
 
     async def start_simulation_process(
-        self, simulation_id: str, agent_code_lines: List[str], agent_data: Dict[str, Any]
+        self,
+        simulation_id: str,
+        agent_code_lines: List[str],
+        agent_data: Dict[str, Any],
     ) -> Coroutine[Any, Any, None]:
-        logger.debug(f"Starting simulation {simulation_id}, state: {await self.get_state()}")
+        logger.debug(
+            f"Starting simulation {simulation_id}, state: {await self.get_state()}"
+        )
         async with self.mutex:
             if self.status != Status.IDLE:
                 raise SimulationException(self.status, "Simulation is already running.")

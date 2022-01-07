@@ -21,10 +21,14 @@ router = APIRouter()
 
 @router.post("/simulation", status_code=201)
 async def create_simulation(simulation_data: CreateSimulation):
-    logger.debug(f"Creating simulation {simulation_data.simulation_id}, state: {await state.get_state()}")
+    logger.debug(
+        f"Creating simulation {simulation_data.simulation_id}, state: {await state.get_state()}"
+    )
     try:
         await state.start_simulation_process(
-            simulation_data.simulation_id, simulation_data.agent_code_lines, simulation_data.agent_data
+            simulation_data.simulation_id,
+            simulation_data.agent_code_lines,
+            simulation_data.agent_data,
         )
     except SimulationException as e:
         raise HTTPException(400, str(e))

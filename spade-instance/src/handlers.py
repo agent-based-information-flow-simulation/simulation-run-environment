@@ -22,7 +22,6 @@ async def simulation_shutdown_handler() -> Coroutine[Any, Any, None]:
     except SimulationException as e:
         logger.info(str(e))
     logger.info("Simulation shutdown complete")
-    
 
 
 @repeat_every(

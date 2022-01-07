@@ -24,8 +24,8 @@ from src.settings import (
 from src.status import Status
 
 if TYPE_CHECKING:
-    from spade.agent import Agent
     from aioxmpp.structs import JID
+    from spade.agent import Agent
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=os.environ.get("LOG_LEVEL_SIMULATION", "INFO"))
