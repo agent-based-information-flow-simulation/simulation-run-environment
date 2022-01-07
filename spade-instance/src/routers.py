@@ -21,10 +21,10 @@ router = APIRouter()
 
 @router.post("/simulation", status_code=201)
 async def create_simulation(simulation_data: CreateSimulation):
-    logger.debug(f"Creating simulation, state: {state.get_state()}")
+    logger.debug(f"Creating simulation {simulation_data.simulation_id}, state: {state.get_state()}")
     try:
         state.start_simulation_process(
-            simulation_data.agent_code_lines, simulation_data.agent_data
+            simulation_data.simulation_id, simulation_data.agent_code_lines, simulation_data.agent_data
         )
     except SimulationException as e:
         raise HTTPException(400, str(e))
@@ -43,8 +43,9 @@ async def delete_simulation():
 async def backup_agent_data(body: Dict[Any, Any]):
     logger.debug(f"Backup from agent: {body['jid']}")
     agent_data = {"instance_id": instance_settings.id, "agent_data": body}
+    url = f"{backup_settings.api_backup_url}/simulations/{state.get_simulation_id()}/data"
     async with httpx.AsyncClient() as client:
-        await client.post(backup_settings.api_backup_url, json=agent_data)
+        await client.put(url, json=agent_data)
 
 
 @router.post("/instance/status", status_code=201)

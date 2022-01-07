@@ -28,9 +28,10 @@ def simulation_shutdown_handler() -> None:
     logger=logger,
 )
 async def instance_state_handler() -> Coroutine[Any, Any, None]:
-    status, num_agents, num_alive_agents = state.get_state()
+    status, simulation_id, num_agents, num_alive_agents = state.get_state()
     instance_state = {
         "status": status.name,
+        "simulation_id": simulation_id,
         "num_agents": num_agents,
         "num_alive_agents": num_alive_agents,
     }
