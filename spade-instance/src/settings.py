@@ -21,8 +21,8 @@ class AppSettings(BaseSettings):
 class BackupSettings(BaseSettings):
     agent_backup_url: str = os.environ.get("AGENT_BACKUP_URL", "")
     api_backup_url: str = os.environ.get("API_BACKUP_URL", "")
-    period: int = int(os.environ.get("BACKUP_PERIOD", 15))
-    delay: int = int(os.environ.get("BACKUP_DELAY", 5))
+    period: int = int(os.environ.get("AGENT_BACKUP_PERIOD", 15))
+    delay: int = int(os.environ.get("AGENT_BACKUP_DELAY", 5))
 
 
 class CommunicationServerSettings(BaseSettings):
@@ -32,14 +32,18 @@ class CommunicationServerSettings(BaseSettings):
 class InstanceSettings(BaseSettings):
     id: str = os.environ.get("HOSTNAME")
     status_url: str = os.environ.get("INSTANCE_STATUS_URL", "")
-    process_verification_period: int = int(
-        os.environ.get("PROCESS_VERIFICATION_PERIOD", 5)
+    process_health_check_period: int = int(
+        os.environ.get("SIMULATION_PROCESS_HEALTH_CHECK_PERIOD", 5)
     )
 
 
 class SimulationSettings(BaseSettings):
-    retry_registration_period: int = int(os.environ.get("RETRY_REGISTRATION_PERIOD", 5))
-    registration_max_concurrency: int = int(os.environ.get("AGENT_REGISTRATION_MAX_CONCURRENCY", 5))
+    registration_retry_after: int = int(
+        os.environ.get("AGENT_REGISTRATION_RETRY_AFTER", 5)
+    )
+    registration_max_concurrency: int = int(
+        os.environ.get("AGENT_REGISTRATION_MAX_CONCURRENCY", 5)
+    )
 
 
 class SimulationLoadBalancerSettings(BaseSettings):
