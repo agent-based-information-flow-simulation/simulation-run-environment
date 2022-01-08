@@ -14,7 +14,6 @@ import numpy
 import orjson
 import spade
 from spade.container import Container
-import time
 
 from src.settings import (
     backup_settings,
@@ -97,21 +96,30 @@ async def async_connect(agent: Agent) -> Coroutine[Any, Any, None]:
     await agent._hook_plugin_after_connection()
 
 
-def connect_agents(agents: List[Agent]) -> None:
-    num_connected_agents = 0
-    for agent in agents:
-        while True:
-            try:
-                asyncio.run_coroutine_threadsafe(async_connect(agent), loop=Container().loop).result()
-            except Exception as e:
-                retry_after = simulation_settings.retry_registration_period
-                logger.warning(f"[{agent.jid}] Connection error (retry in {retry_after} seconds): {e}")
-                time.sleep(retry_after)
-                continue
-            break
-            
-        num_connected_agents += 1
-        logger.info(f"Connected {num_connected_agents} agents")
+async def connect_with_retry(agent: Agent) -> Coroutine[Any, Any, None]:
+    while True:
+        try:
+            await async_connect(agent)
+        except Exception as e:
+            retry_after = simulation_settings.retry_registration_period
+            logger.warning(
+                f"[{agent.jid}] Connection error (retry in {retry_after} seconds): {e}"
+            )
+            await asyncio.sleep(retry_after)
+            continue
+        break
+    logger.info(f"[{agent.jid}] Connected")
+
+
+async def connect_agents(agents: List[Agent]) -> Coroutine[Any, Any, None]:
+    semaphore = asyncio.Semaphore(simulation_settings.registration_max_concurrency)
+
+    async def rate_limited_connect(agent: Agent) -> Coroutine[Any, Any, None]:
+        async with semaphore:
+            await connect_with_retry(agent)
+
+    tasks = [asyncio.create_task(rate_limited_connect(agent)) for agent in agents]
+    await asyncio.gather(*tasks)
 
 
 # https://github.com/agent-based-information-flow-simulation/spade/blob/6a857c2ae0a86b3bdfd20ccfcd28a11e1c6db81e/spade/agent.py#L137
@@ -163,11 +171,13 @@ async def send_status(
 async def run_simulation(
     agent_code_lines: List[str], agent_data: List[Dict[str, Any]]
 ) -> Coroutine[Any, Any, None]:
+    Container().loop = asyncio.get_running_loop()
+
     logger.info("Initializing agents...")
     agents = initialize_agents(agent_code_lines, agent_data)
 
     logger.info("Connecting agents to the communication server...")
-    connect_agents(agents)
+    await connect_agents(agents)
 
     logger.info("Running setup...")
     agent_num_behaviours = setup_agents(agents)

@@ -32,11 +32,14 @@ class CommunicationServerSettings(BaseSettings):
 class InstanceSettings(BaseSettings):
     id: str = os.environ.get("HOSTNAME")
     status_url: str = os.environ.get("INSTANCE_STATUS_URL", "")
-    process_verification_period: int = int(os.environ.get("PROCESS_VERIFICATION_PERIOD", 5))
+    process_verification_period: int = int(
+        os.environ.get("PROCESS_VERIFICATION_PERIOD", 5)
+    )
 
 
 class SimulationSettings(BaseSettings):
     retry_registration_period: int = int(os.environ.get("RETRY_REGISTRATION_PERIOD", 5))
+    registration_max_concurrency: int = int(os.environ.get("AGENT_REGISTRATION_MAX_CONCURRENCY", 5))
 
 
 class SimulationLoadBalancerSettings(BaseSettings):
