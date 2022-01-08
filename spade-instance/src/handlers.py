@@ -52,9 +52,9 @@ async def instance_state_handler() -> Coroutine[Any, Any, None]:
 
 
 @repeat_every(
-    seconds=instance_settings.process_verification_period,
+    seconds=instance_settings.process_health_check_period,
     raise_exceptions=False,
     logger=logger,
 )
-async def simulation_process_handler() -> Coroutine[Any, Any, None]:
-    await state.verify_process()
+async def simulation_process_health_check_handler() -> Coroutine[Any, Any, None]:
+    await state.verify_simulation_process()

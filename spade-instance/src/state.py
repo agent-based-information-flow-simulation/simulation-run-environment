@@ -108,8 +108,8 @@ class State:
 
             return 0.0
 
-    async def verify_process(self) -> Coroutine[Any, Any, None]:
-        logger.debug(f"Verify process state: {await self.get_state()}")
+    async def verify_simulation_process(self) -> Coroutine[Any, Any, None]:
+        logger.debug(f"Verify simulation process, state: {await self.get_state()}")
         async with self.mutex:
             if (
                 self.simulation_process is not None
