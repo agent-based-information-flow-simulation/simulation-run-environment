@@ -101,7 +101,7 @@ async def connect_with_retry(agent: Agent) -> Coroutine[Any, Any, None]:
         try:
             await async_connect(agent)
         except Exception as e:
-            retry_after = simulation_settings.retry_registration_period
+            retry_after = simulation_settings.registration_retry_after
             logger.warning(
                 f"[{agent.jid}] Connection error (retry in {retry_after} seconds): {e}"
             )
