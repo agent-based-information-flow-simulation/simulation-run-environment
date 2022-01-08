@@ -104,7 +104,6 @@ services:
 
 networks:
   db-net:
-  # dns-net:
   graph-generator-net:
   spade-instance-net:
   translator-net:
