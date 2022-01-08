@@ -44,9 +44,11 @@ services:
   spade-instance:
     environment:
       - AGENT_BACKUP_URL=http://localhost:8000/simulation/agent_data
+      - AGENT_REGISTRATION_MAX_CONCURRENCY=10
+      - AGENT_REGISTRATION_RETRY_AFTER=5
       - API_BACKUP_URL=http://simulation-load-balancer:8000
-      - BACKUP_PERIOD=15
-      - BACKUP_DELAY=5
+      - AGENT_BACKUP_PERIOD=15
+      - AGENT_BACKUP_DELAY=5
       - COMMUNICATION_SERVER_PASSWORD=password
       - INSTANCE_STATUS_URL=http://localhost:8000/instance/status
       - LOG_LEVEL_HANDLERS=INFO
@@ -55,11 +57,10 @@ services:
       - LOG_LEVEL_SIMULATION=INFO
       - LOG_LEVEL_STATE=INFO
       - PORT=8000
-      - PROCESS_VERIFICATION_PERIOD=5
-      - RETRY_REGISTRATION_PERIOD=5
       - RELOAD=True
       - SIMULATION_LOAD_BALANCER_URL=http://simulation-load-balancer:8000
       - SIMULATION_LOAD_BALANCER_ANNOUNCEMENT_PERIOD=10
+      - SIMULATION_PROCESS_HEALTH_CHECK_PERIOD=5
     image: madpeh/sre-spade-instance
     networks:
       - spade-instance-net
