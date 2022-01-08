@@ -14,6 +14,7 @@ import numpy
 import orjson
 import spade
 from spade.container import Container
+import time
 
 from src.settings import (
     backup_settings,
@@ -97,18 +98,20 @@ async def async_connect(agent: Agent) -> Coroutine[Any, Any, None]:
 
 
 def connect_agents(agents: List[Agent]) -> None:
-    num_concurrent_connections = min(
-        len(agents), simulation_settings.num_concurrent_registration
-    )
-    for agent in zip(*[iter(agents)] * num_concurrent_connections):
-        futures = [
-            asyncio.run_coroutine_threadsafe(
-                async_connect(agent), loop=Container().loop
-            )
-            for agent in agent
-        ]
-        for future in futures:
-            future.result()
+    num_connected_agents = 0
+    for agent in agents:
+        while True:
+            try:
+                asyncio.run_coroutine_threadsafe(async_connect(agent), loop=Container().loop).result()
+            except Exception as e:
+                retry_after = simulation_settings.retry_registration_period
+                logger.warning(f"[{agent.jid}] Connection error (retry in {retry_after} seconds): {e}")
+                time.sleep(retry_after)
+                continue
+            break
+            
+        num_connected_agents += 1
+        logger.info(f"Connected {num_connected_agents} agents")
 
 
 # https://github.com/agent-based-information-flow-simulation/spade/blob/6a857c2ae0a86b3bdfd20ccfcd28a11e1c6db81e/spade/agent.py#L137

@@ -36,9 +36,7 @@ class InstanceSettings(BaseSettings):
 
 
 class SimulationSettings(BaseSettings):
-    num_concurrent_registration: int = int(
-        os.environ.get("NUM_CONCURRENT_REGISTRATION", 1)
-    )
+    retry_registration_period: int = int(os.environ.get("RETRY_REGISTRATION_PERIOD", 5))
 
 
 class SimulationLoadBalancerSettings(BaseSettings):
