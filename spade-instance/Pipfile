@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+fastapi = {extras = ["all"], version = "*"}
+httpx = "*"
+numpy = "*"
+fastapi-utils = "*"
+aioxmpp = "*"
+psutil = "*"
+spade = {ref = "disable-trace-store", git = "https://github.com/agent-based-information-flow-simulation/spade"}
+orjson = "*"
+
+[dev-packages]
+black = "*"
+isort = "*"
+pytest = "*"
+coverage = "*"
+asgi-lifespan = "*"
+pytest-asyncio = "*"
+pytest-httpx = "*"
+mem-top = "*"
+
+[requires]
+python_version = "3.9"
