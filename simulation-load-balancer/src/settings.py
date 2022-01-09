@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import logging
 import os
 
 from pydantic import BaseSettings
+
+
+def configure_logging() -> None:
+    logging.basicConfig(format="%(levelname)s:     [%(name)s] %(message)s")
 
 
 class AppSettings(BaseSettings):
@@ -10,8 +15,10 @@ class AppSettings(BaseSettings):
     port: int = int(os.environ.get("PORT", 8000))
 
 
-class DatabaseSettings(BaseSettings):
-    url: str = os.environ.get("DB_URL", "")
+class RedisSettings(BaseSettings):
+    redis_address: str = os.environ.get("REDIS_ADDRESS", "")
+    redis_port: int = int(os.environ.get("REDIS_PORT", 6379))
+    redis_password: str = os.environ.get("REDIS_PASSWORD", "")
 
 
 class TranslatorSettings(BaseSettings):
@@ -23,6 +30,6 @@ class GraphGeneratorSettings(BaseSettings):
 
 
 app_settings = AppSettings()
-database_settings = DatabaseSettings()
+redis_settings = RedisSettings()
 translator_settings = TranslatorSettings()
 graph_generator_settings = GraphGeneratorSettings()
