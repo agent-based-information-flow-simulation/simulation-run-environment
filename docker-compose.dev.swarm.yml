@@ -42,18 +42,32 @@ services:
     volumes:
       - ./graph-generator/src:/api/src
 
+  redis:
+    environment:
+      - REDIS_PASSWORD=password
+    image: bitnami/redis:6.2.6-debian-10-r92
+    networks:
+      - redis-net
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/bitnami/redis
+
   simulation-load-balancer:
     build: ./simulation-load-balancer
     environment:
-      - DB_URL=mongodb://user:pass@db:27017/database
       - GRAPH_GENERATOR_URL=http://graph-generator:8000
+      - LOG_LEVEL_HANDLERS=INFO
       - PORT=8000
+      - REDIS_ADDRESS=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=password
       - RELOAD=True
       - TRANSLATOR_URL=http://translator:8000
     image: 127.0.0.1:5000/simulation-load-balancer
     networks:
-      - db-net
       - graph-generator-net
+      - redis-net
       - spade-instance-net
       - translator-net
     ports:
@@ -105,6 +119,7 @@ services:
 networks:
   db-net:
   graph-generator-net:
+  redis-net:
   spade-instance-net:
   translator-net:
   external-sre-cs-net:
@@ -113,3 +128,4 @@ networks:
 
 volumes:
   db-data:
+  redis-data:
