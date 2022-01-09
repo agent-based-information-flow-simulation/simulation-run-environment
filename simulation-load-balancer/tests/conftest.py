@@ -21,7 +21,7 @@ translator_settings.url = "http://fake-translator"
 
 @pytest.fixture
 async def app() -> FastAPI:
-    app = get_app()
+    app = get_app(unit_tests=True)
     async with LifespanManager(app):
         yield app
 
