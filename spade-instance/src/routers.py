@@ -9,7 +9,7 @@ from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
 from src.exceptions import SimulationException
-from src.models import CreateSimulation, InstanceStatus
+from src.models import CreateSimulation, DeletedSimulation, InstanceStatus
 from src.settings import backup_settings, instance_settings
 from src.state import state
 
@@ -34,16 +34,18 @@ async def create_simulation(simulation_data: CreateSimulation):
         raise HTTPException(400, str(e))
 
 
-@router.delete("/simulation")
+@router.delete("/simulation", response_model=DeletedSimulation, status_code=200)
 async def delete_simulation():
     logger.debug(f"Deleting simulation, state: {await state.get_state()}")
+    _, simulation_id, _, _ = await state.get_state()
     try:
         await state.kill_simulation_process()
+        return DeletedSimulation(simulation_id=simulation_id)
     except SimulationException as e:
         raise HTTPException(400, str(e))
 
 
-@router.post("/simulation/agent_data", status_code=201)
+@router.post("/internal/simulation/agent_data", status_code=201)
 async def backup_agent_data(body: Dict[Any, Any]):
     logger.debug(f"Backup from agent: {body['jid']}")
     agent_data = {"instance_id": instance_settings.id, "agent_data": body}
@@ -52,7 +54,7 @@ async def backup_agent_data(body: Dict[Any, Any]):
         await client.put(url, json=agent_data)
 
 
-@router.post("/instance/status", status_code=201)
+@router.post("/internal/instance/status", status_code=201)
 async def update_active_instance_status(instance_status: InstanceStatus):
     logger.debug(f"Update active instance state: {instance_status}")
     try:

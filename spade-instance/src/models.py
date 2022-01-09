@@ -13,6 +13,10 @@ class CreateSimulation(BaseModel):
     agent_data: List[Dict[str, Any]]
 
 
+class DeletedSimulation(BaseModel):
+    simulation_id: str
+
+
 class InstanceStatus(BaseModel):
     status: Status
     num_agents: int
