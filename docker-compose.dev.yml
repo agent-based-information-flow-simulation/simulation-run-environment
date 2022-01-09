@@ -77,14 +77,14 @@ services:
     build: ./spade-instance
     container_name: spade-instance
     environment:
-      - AGENT_BACKUP_URL=http://localhost:8000/simulation/agent_data
+      - AGENT_BACKUP_URL=http://127.0.0.1:8000/internal/simulation/agent_data
       - AGENT_REGISTRATION_MAX_CONCURRENCY=10
       - AGENT_REGISTRATION_RETRY_AFTER=5
       - API_BACKUP_URL=http://simulation-load-balancer:8000
       - AGENT_BACKUP_PERIOD=15
       - AGENT_BACKUP_DELAY=5
       - COMMUNICATION_SERVER_PASSWORD=password
-      - INSTANCE_STATUS_URL=http://localhost:8000/instance/status
+      - INSTANCE_STATUS_URL=http://127.0.0.1:8000/internal/instance/status
       - LOG_LEVEL_HANDLERS=INFO
       - LOG_LEVEL_UVICORN_ACCESS=WARNING
       - LOG_LEVEL_ROUTERS=INFO
