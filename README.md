@@ -29,6 +29,7 @@ Use the `server.sh` utility script.
 
 After starting the `.dev.yml` compose file, the server in accessible on localhost.
 * port `80` - simulation load balancer
+* port `6379` - redis
 * port `8000` - translator
 * port `8001` - graph generator
 * port `9000` - spade instance
