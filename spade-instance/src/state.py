@@ -8,12 +8,14 @@ from typing import TYPE_CHECKING, Any, Coroutine, Dict, List, Tuple
 
 import psutil
 
-from src.exceptions import SimulationException
-from src.simulation import main
+from src.exceptions import SimulationException, SimulationStateNotSetException
+from src.simulation.main import main
 from src.status import Status
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from asyncio.locks import Lock
+
+    from fastapi import FastAPI
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=os.environ.get("LOG_LEVEL_STATE", "INFO"))
@@ -41,6 +43,7 @@ class State:
         async with self.mutex:
             if self.status == status.IDLE:
                 raise SimulationException(self.status, "Simulation is not running.")
+
             self.status = status
             self.num_agents = num_agents
             self.broken_agents = broken_agents
@@ -66,21 +69,21 @@ class State:
         self,
         simulation_id: str,
         agent_code_lines: List[str],
-        agent_data: Dict[str, Any],
+        agent_data: List[Dict[str, Any]],
     ) -> Coroutine[Any, Any, None]:
         logger.debug(
             f"Starting simulation {simulation_id}, state: {await self.get_state()}"
         )
         async with self.mutex:
-            if self.status in (Status.IDLE, Status.DEAD):
-                self.status = Status.STARTING
-                self.simulation_id = simulation_id
-                self.simulation_process = Process(
-                    target=main, args=(agent_code_lines, agent_data)
-                )
-                self.simulation_process.start()
+            if self.status not in (Status.IDLE, Status.DEAD):
+                raise SimulationException(self.status, "Simulation is already running.")
 
-            raise SimulationException(self.status, "Simulation is already running.")
+            self.status = Status.STARTING
+            self.simulation_id = simulation_id
+            self.simulation_process = Process(
+                target=main, args=(agent_code_lines, agent_data)
+            )
+            self.simulation_process.start()
 
     async def kill_simulation_process(self) -> Coroutine[Any, Any, None]:
         logger.debug(f"Killing simulation, state: {await self.get_state()}")
@@ -120,4 +123,12 @@ class State:
                 self._clean_state()
 
 
-state = State()
+def set_app_simulation_state(app: FastAPI, state: State) -> None:
+    app.state.simulation_state = state
+
+
+def get_app_simulation_state(app: FastAPI) -> State:
+    try:
+        return app.state.simulation_state
+    except AttributeError:
+        raise SimulationStateNotSetException()
