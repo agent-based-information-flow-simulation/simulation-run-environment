@@ -138,8 +138,15 @@ function publish() {
     done
 
     if [ "$DEV" -eq "1" ]; then
-        echo "creating local registry..." 
-        docker service create --name registry --publish published=5000,target=5000 registry:2
+        echo "creating local registry"
+        if ! docker service ps -q registry > /dev/null 2>&1; then
+            if ! docker service create --name registry --publish published=5000,target=5000 registry:2; then
+                echo "failed to create registry"
+                usage
+            fi
+        else
+            echo "registry already exists"
+        fi
         docker-compose -f docker-compose.dev.swarm.yml build --parallel
         docker-compose -f docker-compose.dev.swarm.yml push
     else

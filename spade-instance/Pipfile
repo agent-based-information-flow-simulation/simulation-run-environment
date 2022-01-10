@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = {extras = ["all"], version = "*"}
 httpx = "*"
 numpy = "*"
 fastapi-utils = "*"
@@ -12,6 +11,8 @@ aioxmpp = "*"
 psutil = "*"
 spade = {ref = "disable-trace-store", git = "https://github.com/agent-based-information-flow-simulation/spade"}
 orjson = "*"
+fastapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
 
 [dev-packages]
 black = "*"

@@ -5,13 +5,14 @@ import os
 from typing import Any, Dict
 
 import httpx
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 
+from src.dependencies import state
 from src.exceptions import SimulationException
 from src.models import CreateSimulation, DeletedSimulation, InstanceStatus
 from src.settings import backup_settings, instance_settings
-from src.state import state
+from src.state import State
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=os.environ.get("LOG_LEVEL_ROUTERS", "INFO"))
@@ -20,7 +21,9 @@ router = APIRouter()
 
 
 @router.post("/simulation", status_code=201)
-async def create_simulation(simulation_data: CreateSimulation):
+async def create_simulation(
+    simulation_data: CreateSimulation, state: State = Depends(state)
+):
     logger.debug(
         f"Creating simulation {simulation_data.simulation_id}, state: {await state.get_state()}"
     )
@@ -35,7 +38,7 @@ async def create_simulation(simulation_data: CreateSimulation):
 
 
 @router.delete("/simulation", response_model=DeletedSimulation, status_code=200)
-async def delete_simulation():
+async def delete_simulation(state: State = Depends(state)):
     logger.debug(f"Deleting simulation, state: {await state.get_state()}")
     _, simulation_id, _, _ = await state.get_state()
     try:
@@ -46,7 +49,7 @@ async def delete_simulation():
 
 
 @router.post("/internal/simulation/agent_data", status_code=201)
-async def backup_agent_data(body: Dict[Any, Any]):
+async def backup_agent_data(body: Dict[Any, Any], state: State = Depends(state)):
     logger.debug(f"Backup from agent: {body['jid']}")
     agent_data = {"instance_id": instance_settings.id, "agent_data": body}
     url = f"{backup_settings.api_backup_url}/simulations/{await state.get_simulation_id()}/data"
@@ -55,7 +58,9 @@ async def backup_agent_data(body: Dict[Any, Any]):
 
 
 @router.post("/internal/instance/status", status_code=201)
-async def update_active_instance_status(instance_status: InstanceStatus):
+async def update_active_instance_status(
+    instance_status: InstanceStatus, state: State = Depends(state)
+):
     logger.debug(f"Update active instance state: {instance_status}")
     try:
         await state.update_active_state(
