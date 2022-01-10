@@ -31,13 +31,16 @@ class CommunicationServerSettings(BaseSettings):
 
 class InstanceSettings(BaseSettings):
     id: str = os.environ.get("HOSTNAME")
-    status_url: str = os.environ.get("INSTANCE_STATUS_URL", "")
     process_health_check_period: int = int(
         os.environ.get("SIMULATION_PROCESS_HEALTH_CHECK_PERIOD", 5)
     )
 
 
 class SimulationSettings(BaseSettings):
+    status_url: str = os.environ.get("ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_URL", "")
+    status_period: int = int(
+        os.environ.get("ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_PERIOD", 10)
+    )
     registration_retry_after: int = int(
         os.environ.get("AGENT_REGISTRATION_RETRY_AFTER", 5)
     )
