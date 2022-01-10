@@ -57,8 +57,6 @@ async def test_setup_agent_returns_list_of_agent_behaviours() -> None:
     agent.behaviours = [behaviour]
 
     behaviours = setup_agent(agent)
-    
-    print(behaviours)
 
     assert behaviours == agent.behaviours
 
@@ -66,7 +64,7 @@ async def test_setup_agent_returns_list_of_agent_behaviours() -> None:
 @patch("src.simulation.initialization.setup_agent")
 async def test_setup_agents_returns_dictionary_with_jids_mapped_to_list_of_behaviours(
     setup_agent: Mock,
-) -> None:    
+) -> None:
     agent = Mock(spec=Agent)
     agent.jid = "agent@test.com"
     behaviour = Mock(spec=OneShotBehaviour)
