@@ -19,6 +19,5 @@ class DatabaseSettings(BaseSettings):
     url: str = os.environ.get("DB_URL", "")
 
 
-
 app_settings = AppSettings()
 database_settings = DatabaseSettings()

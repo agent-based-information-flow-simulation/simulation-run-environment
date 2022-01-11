@@ -32,6 +32,7 @@ After starting the `.dev.yml` compose file, the server in accessible on localhos
 * port `6379` - redis
 * port `8000` - translator
 * port `8001` - graph generator
+* port `8002` - data processor
 * port `9000` - spade instance
 * port `27017` - mongodb
 * port `27018` - mongodb express

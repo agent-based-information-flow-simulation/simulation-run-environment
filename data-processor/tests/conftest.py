@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, List
 import pytest
 from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
-
 from src.app import get_app
 from src.settings import app_settings
 

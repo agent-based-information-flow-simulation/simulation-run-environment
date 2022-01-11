@@ -1,13 +1,26 @@
 version: '3.9'
 
 services:
+  data-processor:
+    build: ./data-processor
+    environment:
+      - DB_URL=mongodb://user:pass@db:27017/simulations?authSource=admin
+      - PORT=8000
+      - RELOAD=True
+    image: 127.0.0.1:5000/data-processor
+    networks:
+      - data-processor-net
+      - db-net
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./data-processor/src:/api/src
+
+
   db:
     environment:
       - MONGODB_ROOT_USER=root
       - MONGODB_ROOT_PASSWORD=root
-      - MONGODB_USERNAME=user
-      - MONGODB_PASSWORD=pass
-      - MONGODB_DATABASE=database
     image: bitnami/mongodb:5.0.5-debian-10-r16
     networks:
       - db-net
@@ -66,6 +79,7 @@ services:
       - TRANSLATOR_URL=http://translator:8000
     image: 127.0.0.1:5000/simulation-load-balancer
     networks:
+      - data-processor-net
       - graph-generator-net
       - redis-net
       - spade-instance-net
@@ -104,6 +118,7 @@ services:
       - SIMULATION_PROCESS_HEALTH_CHECK_PERIOD=5
     image: 127.0.0.1:5000/spade-instance
     networks:
+      - data-processor-net
       - spade-instance-net
       - external-sre-cs-net
     volumes:
@@ -123,6 +138,7 @@ services:
       - ./translator/src:/api/src
 
 networks:
+  data-processor-net:
   db-net:
   graph-generator-net:
   redis-net:
