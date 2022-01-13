@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+
 from src.db.connection import (
     create_shutdown_db_connection_handler,
     create_startup_db_connection_handler,
