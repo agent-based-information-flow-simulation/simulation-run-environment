@@ -1,18 +1,55 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import List
 
 from fastapi import APIRouter, Depends
-from src.dependencies import agent_service
-from src.services import AgentService
+from fastapi.exceptions import HTTPException
+from fastapi.responses import ORJSONResponse
+
+from src.dependencies import simulation_service
+from src.exceptions import SimulationBackupAlreadyExistsException
+from src.models import CreateAgent, UpdateAgent
+from src.services import SimulationService
 
 router = APIRouter()
 
-@router.post("/agents")
-async def create_agent(body: Dict[str, Any], agent_service: AgentService = Depends(agent_service)):
-    await agent_service.insert_agent("123", body)
+
+@router.post("/simulations/{simulation_id}/backup")
+async def create_backup(
+    simulation_id: str,
+    agent_data: List[CreateAgent],
+    simulation_service: SimulationService = Depends(simulation_service),
+):
+    try:
+        await simulation_service.create_backup(simulation_id, agent_data)
+    except SimulationBackupAlreadyExistsException as e:
+        raise HTTPException(400, str(e))
 
 
-@router.get("/agents")
-async def get_agents(agent_service: AgentService = Depends(agent_service)):
-    return await agent_service.get_agents("123")
+@router.put("/simulations/{simulation_id}/backup/agents")
+async def update_agent(
+    simulation_id: str,
+    agent_data: UpdateAgent,
+    simulation_service: SimulationService = Depends(simulation_service),
+):
+    await simulation_service.update_agent(simulation_id, agent_data)
+
+
+@router.get("/simulations/{simulation_id}/backup")
+async def get_backup(
+    simulation_id: str,
+    simulation_service: SimulationService = Depends(simulation_service),
+):
+    backup = await simulation_service.get_backup(simulation_id)
+    return ORJSONResponse(
+        headers={"Content-Type": "application/json"},
+        content=backup,
+    )
+
+
+@router.delete("/simulations/{simulation_id}/backup")
+async def delete_backup(
+    simulation_id: str,
+    simulation_service: SimulationService = Depends(simulation_service),
+):
+    await simulation_service.delete_backup(simulation_id)
