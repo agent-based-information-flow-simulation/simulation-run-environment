@@ -23,8 +23,6 @@ services:
     ports:
       - "5555:5555"
       - "8002:8000"
-    volumes:
-      - data-processor-proxy-data:/usr/local/etc/haproxy
 
   db:
     environment:
@@ -142,6 +140,3 @@ networks:
   external-sre-cs-net:
     external: true
     name: sre-cs
-
-volumes:
-  data-processor-proxy-data:
