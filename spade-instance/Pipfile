@@ -13,6 +13,7 @@ spade = {ref = "disable-trace-store", git = "https://github.com/agent-based-info
 orjson = "*"
 fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
+uvloop = "*"
 
 [dev-packages]
 black = "*"

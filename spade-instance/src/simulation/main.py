@@ -6,6 +6,7 @@ import os
 from typing import TYPE_CHECKING, Any, Coroutine, Dict, List
 
 import spade
+import uvloop
 from spade.container import Container
 
 from src.settings import simulation_settings
@@ -60,4 +61,5 @@ async def run_simulation(
 
 
 def main(agent_code_lines: List[str], agent_data: List[Dict[str, Any]]) -> None:
+    uvloop.install()
     asyncio.run(run_simulation(agent_code_lines, agent_data))
