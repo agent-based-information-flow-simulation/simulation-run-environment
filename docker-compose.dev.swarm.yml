@@ -4,42 +4,38 @@ services:
   data-processor:
     build: ./data-processor
     environment:
-      - DB_URL=mongodb://user:pass@db:27017/simulations?authSource=admin
+      - DB_URL=neo4j://db:7687
       - PORT=8000
       - RELOAD=True
     image: 127.0.0.1:5000/data-processor
     networks:
       - data-processor-net
       - db-net
-    ports:
-      - "8002:8000"
     volumes:
       - ./data-processor/src:/api/src
 
+  data-processor-proxy:
+    build: ./data-processor-proxy
+    image: 127.0.0.1:5000/data-processor-proxy
+    networks:
+      - data-processor-net
+      - data-processor-proxy-net
+    ports:
+      - "5555:5555"
+      - "8002:8000"
+    volumes:
+      - data-processor-proxy-data:/usr/local/etc/haproxy
 
   db:
     environment:
-      - MONGODB_ROOT_USER=root
-      - MONGODB_ROOT_PASSWORD=root
-    image: bitnami/mongodb:5.0.5-debian-10-r16
+      - NEO4J_AUTH=none
+      - NEO4JLABS_PLUGINS=["apoc"]
+    image: neo4j:4.4.2-community
     networks:
       - db-net
     ports:
-      - "27017:27017"
-    volumes:
-      - db-data:/bitnami/mongodb
-
-  db-gui:
-    environment:
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=root
-      - ME_CONFIG_MONGODB_SERVER=db
-      - ME_CONFIG_OPTIONS_EDITORTHEME=3024-night
-    image: mongo-express:0.54.0
-    networks:
-      - db-net
-    ports:
-      - "27018:8081"
+      - "7474:7474"
+      - "7687:7687"
 
   graph-generator:
     build: ./graph-generator
@@ -63,8 +59,6 @@ services:
       - redis-net
     ports:
       - "6379:6379"
-    volumes:
-      - redis-data:/bitnami/redis
 
   simulation-load-balancer:
     build: ./simulation-load-balancer
@@ -79,7 +73,7 @@ services:
       - TRANSLATOR_URL=http://translator:8000
     image: 127.0.0.1:5000/simulation-load-balancer
     networks:
-      - data-processor-net
+      - data-processor-proxy-net
       - graph-generator-net
       - redis-net
       - spade-instance-net
@@ -99,7 +93,7 @@ services:
       - AGENT_BACKUP_DELAY=5
       - AGENT_REGISTRATION_MAX_CONCURRENCY=10
       - AGENT_REGISTRATION_RETRY_AFTER=5
-      - API_BACKUP_URL=http://simulation-load-balancer:8000
+      - API_BACKUP_URL=http://data-processor-proxy:8000
       - COMMUNICATION_SERVER_PASSWORD=password
       - LOG_LEVEL_AGENT=INFO
       - LOG_LEVEL_HANDLERS=INFO
@@ -139,6 +133,7 @@ services:
 
 networks:
   data-processor-net:
+  data-processor-proxy-net:
   db-net:
   graph-generator-net:
   redis-net:
@@ -149,5 +144,4 @@ networks:
     name: sre-cs
 
 volumes:
-  db-data:
-  redis-data:
+  data-processor-proxy-data:
