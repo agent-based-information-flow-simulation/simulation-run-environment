@@ -4,12 +4,15 @@ from pprint import pprint
 
 import requests as r
 
-IMAGE_HOSTNAME = sys.argv[1]
-URL = "http://data-processor-proxy:5555/v2"
+PROXY_HOSTNAME_WITH_PORT = sys.argv[1]
+URL = f"http://{PROXY_HOSTNAME_WITH_PORT}/v2"
 GET_VERSION_URL = f"{URL}/services/haproxy/configuration/backends"
 ENDPOINT_USER = "admin"
 ENDPOINT_PASSWORD = "admin"
 NUM_MAX_RETRIES = 100
+IMAGE_HOSTNAME = sys.argv[2]
+BACKEND_NAME = sys.argv[3]
+BACKEND_PORT = int(sys.argv[4])
 
 
 def register(backend_name, port):
@@ -49,8 +52,8 @@ def register(backend_name, port):
             version += 1
             retries += 1
             time.sleep(1)
-    print("Could not add server to haproxy backend {backend_name}")
+    print(f"Could not add server to haproxy backend {backend_name}")
     exit(1)
 
 
-register("data_processor", 8000)
+register(BACKEND_NAME, BACKEND_PORT)
