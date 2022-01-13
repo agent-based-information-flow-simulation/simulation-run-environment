@@ -51,7 +51,7 @@ async def delete_simulation(state: State = Depends(state)):
 @router.post("/internal/simulation/agent_data", status_code=201)
 async def backup_agent_data(body: Dict[Any, Any], state: State = Depends(state)):
     logger.debug(f"Backup from agent: {body['jid']}")
-    url = f"{backup_settings.api_backup_url}/simulations/{await state.get_simulation_id()}/backup/agents"    
+    url = f"{backup_settings.api_backup_url}/simulations/{await state.get_simulation_id()}/backup/agents"
     async with httpx.AsyncClient() as client:
         await client.put(url, json=body)
 
