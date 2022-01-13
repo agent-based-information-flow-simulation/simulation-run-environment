@@ -11,7 +11,7 @@ from fastapi.exceptions import HTTPException
 from src.dependencies import state
 from src.exceptions import SimulationException
 from src.models import CreateSimulation, DeletedSimulation, InstanceStatus
-from src.settings import backup_settings, instance_settings
+from src.settings import backup_settings
 from src.state import State
 
 logger = logging.getLogger(__name__)
@@ -51,10 +51,9 @@ async def delete_simulation(state: State = Depends(state)):
 @router.post("/internal/simulation/agent_data", status_code=201)
 async def backup_agent_data(body: Dict[Any, Any], state: State = Depends(state)):
     logger.debug(f"Backup from agent: {body['jid']}")
-    agent_data = {"instance_id": instance_settings.id, "agent_data": body}
-    url = f"{backup_settings.api_backup_url}/simulations/{await state.get_simulation_id()}/data"
+    url = f"{backup_settings.api_backup_url}/simulations/{await state.get_simulation_id()}/backup/agents"    
     async with httpx.AsyncClient() as client:
-        await client.put(url, json=agent_data)
+        await client.put(url, json=body)
 
 
 @router.post("/internal/instance/status", status_code=201)
