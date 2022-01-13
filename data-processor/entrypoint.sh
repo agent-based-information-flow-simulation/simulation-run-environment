@@ -1,5 +1,5 @@
 #!/bin/bash
-while ! nc -z db 27017; do sleep 1; done;
-echo "Database is up"
-
-/venv/bin/python3.10 -m src.main
+/api/startup_scripts/wait_for_db.sh
+/api/startup_scripts/wait_for_proxy.sh
+/venv/bin/python3.9 -u /api/startup_scripts/register_in_proxy.py `cat /etc/hostname` && \
+/venv/bin/python3.9 -m src.main
