@@ -13,7 +13,7 @@ function usage() {
     echo "       services: print all services"
     echo "       publish [-d: dev mode (REQUIRES SWARM CLUSTER)]: publish the images to a registry"
     echo "       unit-test SERVICE: run the unit-test suite for the given service"
-    echo "       reload SERVICE (REQUIRES SWARM/DEV MODE): rebuild and update the service"
+    echo "       reload SERVICE (REQUIRES DEV MODE): rebuild and update the service"
     echo ""
     echo "IMPORTANT: number of kafka-consumer/kafka-streams instances should be bigger or equal to the number of the topic partitions they read from"
     echo "           see UPDATE_AGENT_OUTPUT_TOPIC_PARTITIONS for kafka-consumer, UPDATE_AGENT_INPUT_TOPIC_PARTITIONS for kafka-streams"
