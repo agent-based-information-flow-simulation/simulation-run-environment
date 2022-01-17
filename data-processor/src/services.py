@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
-from typing import Any, Dict, List, Tuple, Type
-
-from neo4j.exceptions import TransientError
+from typing import Any, Dict, List, Type
 
 from src.db.repositories import BaseRepository, SimulationRepository
 from src.exceptions import SimulationBackupAlreadyExistsException
-from src.models import CreateAgent, UpdateAgent
+from src.models import CreateAgent
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=os.environ.get("LOG_LEVEL_SERVICES", "INFO"))
@@ -65,56 +62,6 @@ class SimulationService(BaseService):
         await self.repository.create_agents(
             agents_properties, agents_initial_connections
         )
-
-    def _get_properties(
-        self, agent: UpdateAgent, simulation_id: str
-    ) -> Dict[str, str | float]:
-        return {
-            "simulation_id": simulation_id,
-            "jid": agent.jid,
-            "type": agent.type,
-            **agent.floats,
-            **agent.enums,
-        }
-
-    def _get_connections(self, agent: UpdateAgent) -> List[Dict[str, str | List[str]]]:
-        connections = []
-        for connection_name, to_jids in agent.connections.items():
-            connections.append({"name": connection_name, "to": to_jids})
-        return connections
-
-    def _get_messages(self, agent: UpdateAgent) -> List[Dict[str, str | List[str]]]:
-        messages = []
-        for message_list_name, message_list in agent.messages.items():
-            messages.append({"name": message_list_name, "messages": message_list})
-        return messages
-
-    async def update_agent(self, simulation_id: str, agent: UpdateAgent) -> None:
-        properties = self._get_properties(agent, simulation_id)
-        connections = self._get_connections(agent)
-        messages = self._get_messages(agent)
-
-        max_retires = 3
-        retries = 0
-        while retries < max_retires:
-            try:
-                await self.repository.update_agent(
-                    agent.jid, properties, connections, messages
-                )
-            except TransientError as e:
-                retries += 1
-                retries_left = max_retires - retries
-                logger.warning(
-                    f"[{agent.jid}] Database transient error ({retries_left} retires left): {e}"
-                )
-                if retries_left == 0:
-                    logger.error(
-                        f"[{agent.jid}] Database transient error - no more retires left: {e}"
-                    )
-                else:
-                    await asyncio.sleep(0.02)
-                continue
-            break
 
     async def delete_backup(self, simulation_id: str) -> None:
         await self.repository.delete_agents(simulation_id)
