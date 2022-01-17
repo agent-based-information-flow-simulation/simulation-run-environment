@@ -14,3 +14,13 @@ class SimulationException(Exception):
 class SimulationStateNotSetException(Exception):
     def __init__(self):
         super().__init__("Simulation state is not set")
+
+
+class SimulationIdNotSetException(Exception):
+    def __init__(self):
+        super().__init__("Simulation id is not set")
+
+
+class KafkaNotSetException(Exception):
+    def __init__(self):
+        super().__init__("Kafka is not set")
