@@ -81,6 +81,21 @@ services:
     volumes:
       - ./kafka/startup_scripts:/docker-entrypoint-initdb.d
 
+  kafka-consumer:
+    build: ./kafka-consumer
+    environment:
+      - BATCH_TIMEOUT_MS=5000
+      - DB_URL=neo4j://db:7687
+      - KAFKA_ADDRESS=kafka:9092
+      - LOG_LEVEL_MAIN=INFO
+      - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_DB_ADDRESS=db:7474
+    image: 127.0.0.1:5000/kafka-consumer
+    networks:
+      - db-net
+      - kafka-net
+
   kafka-gui:
     environment:
       - KAFKA_BROKERCONNECT=kafka:9092
