@@ -107,7 +107,7 @@ class Consumer:
         record_lists: List[List[ConsumerRecord]] = list(batch.values())
         if record_lists:
             record_list = record_lists[0]
-            return list(map(lambda record: record.value, record_list))
+            return [record.value for record in record_list]
         return []
 
     async def consume(self) -> None:
