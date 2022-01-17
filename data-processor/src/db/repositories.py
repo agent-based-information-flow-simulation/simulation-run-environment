@@ -69,7 +69,7 @@ class SimulationRepository(BaseRepository):
         MATCH (agent:Agent {simulation_id: $simulation_id})
         DETACH DELETE agent
         """
-        
+
         await self.session.run(
             delete_all_agents_from_simulation_query, simulation_id=simulation_id
         )
@@ -81,12 +81,12 @@ class SimulationRepository(BaseRepository):
         MATCH (agent:Agent {simulation_id: $simulation_id})
         RETURN agent
         """
-        
+
         get_relationships_query = """
         MATCH (agent:Agent {simulation_id: $simulation_id})-[relationship]->()
         RETURN relationship
         """
-        
+
         tx = await self.session.begin_transaction()
         agent_records = await tx.run(get_agents_query, simulation_id=simulation_id)
         relationships_records = await tx.run(
@@ -96,5 +96,5 @@ class SimulationRepository(BaseRepository):
         relationships = [record async for record in relationships_records]
         await tx.commit()
         await tx.close()
-        
+
         return agents, relationships
