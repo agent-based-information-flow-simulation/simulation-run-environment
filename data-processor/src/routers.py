@@ -8,7 +8,7 @@ from fastapi.responses import ORJSONResponse
 
 from src.dependencies import simulation_service
 from src.exceptions import SimulationBackupAlreadyExistsException
-from src.models import CreateAgent, UpdateAgent
+from src.models import CreateAgent
 from src.services import SimulationService
 
 router = APIRouter()
@@ -24,15 +24,6 @@ async def create_backup(
         await simulation_service.create_backup(simulation_id, agent_data)
     except SimulationBackupAlreadyExistsException as e:
         raise HTTPException(400, str(e))
-
-
-@router.put("/simulations/{simulation_id}/backup/agents")
-async def update_agent(
-    simulation_id: str,
-    agent_data: UpdateAgent,
-    simulation_service: SimulationService = Depends(simulation_service),
-):
-    await simulation_service.update_agent(simulation_id, agent_data)
 
 
 @router.get("/simulations/{simulation_id}/backup")
