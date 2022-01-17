@@ -169,6 +169,7 @@ services:
       - "80:8000"
 
   spade-instance:
+    build: ./spade-instance
     environment:
       - ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_URL=http://127.0.0.1:8000/internal/instance/status
       - ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_PERIOD=10
