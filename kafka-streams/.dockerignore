@@ -1,0 +1,9 @@
+.bsp
+.idea
+project/project
+project/target
+target
+.dockerignore
+.gitignore
+.scalafmt.conf
+Dockerfile

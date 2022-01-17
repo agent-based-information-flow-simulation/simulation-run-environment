@@ -20,7 +20,8 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /api
-COPY entrypoint.sh /api/entrypoint.sh
+COPY ./startup_scripts /api/startup_scripts
+COPY ./entrypoint.sh /api/entrypoint.sh
 COPY --from=build-venv /.venv /venv
-COPY src /api/src
+COPY ./src /api/src
 ENTRYPOINT [ "/api/entrypoint.sh" ]
