@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function usage() {
-    echo "Usage: $0 {init|join|network|start|scale|stop|clean|stats|services|publish|unit-test}"
+    echo "Usage: $0 {init|join|network|start|scale|stop|clean|stats|services|publish|unit-test|reload}"
     echo "       init: initialize the swarm cluster"
     echo "       join TOKEN IP:PORT: join the swarm cluster"
     echo "       network (REQUIRES SWARM CLUSTER): create shared networks for the swarm mode"
@@ -13,6 +13,7 @@ function usage() {
     echo "       services: print all services"
     echo "       publish [-d: dev mode (REQUIRES SWARM CLUSTER)]: publish the images to a registry"
     echo "       unit-test SERVICE: run the unit-test suite for the given service"
+    echo "       reload SERVICE (REQUIRES SWARM/DEV MODE): rebuild and update the service"
     echo ""
     echo "IMPORTANT: number of kafka-consumer/kafka-streams instances should be bigger or equal to the number of the topic partitions they read from"
     echo "           see UPDATE_AGENT_OUTPUT_TOPIC_PARTITIONS for kafka-consumer, UPDATE_AGENT_INPUT_TOPIC_PARTITIONS for kafka-streams"
@@ -155,6 +156,16 @@ function unit-test() {
     docker-compose -f docker-compose.test.yml up "$1" --build
 }
 
+function reload() {
+    if [ -z "${1}" ]; then
+        echo "missing service name"
+        usage
+    fi
+    docker-compose -f docker-compose.dev.swarm.yml build "${1}" && \
+    docker-compose -f docker-compose.dev.swarm.yml push && \
+    docker service update sre_"${1}" --force
+}
+
 case "${1}" in
     init) init ;;
 
@@ -177,6 +188,8 @@ case "${1}" in
     publish) publish "${@:2}" ;;
 
     unit-test) unit-test "${2}" ;;
+
+    reload) reload "${2}" ;;
 
     *) usage ;;
 esac
