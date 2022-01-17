@@ -7,6 +7,12 @@ services:
       - DB_URL=neo4j://db:7687
       - LOG_LEVEL_SERVICES=INFO
       - PORT=8000
+      - PROXY_REGISTRATION_ADDRESS=data-processor-proxy:5555
+      - PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_NAME=data_processor
+      - PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_PORT=8000
+      - PROXY_REGISTRATION_MAX_RETRIES=100
+      - PROXY_REGISTRATION_USER_NAME=admin
+      - PROXY_REGISTRATION_USER_PASSWORD=admin
       - RELOAD=False
       - WAIT_FOR_DB_ADDRESS=db:7474
       - WAIT_FOR_PROXY_ADDRESS=data-processor-proxy:5555
@@ -17,6 +23,9 @@ services:
 
   data-processor-proxy:
     build: ./data-processor-proxy
+    environment:
+      - API_PORT=5555
+      - LISTEN_DATA_PROCESSOR_PORT=8000
     image: madpeh/sre-data-processor-proxy
     networks:
       - data-processor-proxy-net
