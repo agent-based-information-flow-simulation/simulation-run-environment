@@ -50,8 +50,6 @@ services:
       - redis-net
     ports:
       - "6379:6379"
-    volumes:
-      - redis-data:/bitnami/redis
 
   simulation-load-balancer:
     build: ./simulation-load-balancer
@@ -70,6 +68,7 @@ services:
       - redis-net
       - spade-instance-net
       - translator-net
+      - external-li-sre-net
     ports:
       - "80:8000"
     volumes:
@@ -125,7 +124,9 @@ networks:
   external-sre-cs-net:
     external: true
     name: sre-cs
+  external-li-sre-net:
+    external: true
+    name: li-sre
 
 volumes:
   db-data:
-  redis-data:
