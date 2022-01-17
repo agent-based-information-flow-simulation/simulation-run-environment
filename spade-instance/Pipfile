@@ -14,6 +14,7 @@ orjson = "*"
 fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 uvloop = "*"
+aiokafka = "*"
 
 [dev-packages]
 black = "*"
