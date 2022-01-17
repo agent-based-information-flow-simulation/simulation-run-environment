@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 
 simulation_load_balancer_settings.url = "http://fake-simulation-load-balancer"
 backup_settings.agent_backup_url = "http://fake-agent-backup"
-backup_settings.api_backup_url = "http://fake-api-backup"
 simulation_settings.status_url = "http://fake-instance-status"
 
 
