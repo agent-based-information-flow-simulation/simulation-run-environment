@@ -42,6 +42,7 @@ services:
     image: neo4j:4.4.2-community
     networks:
       - db-net
+      - external-li-sre-net
     ports:
       - "7474:7474"
       - "7687:7687"
