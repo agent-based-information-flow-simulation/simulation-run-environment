@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pytest
+import pytest_asyncio
 from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
 
@@ -13,14 +13,14 @@ if TYPE_CHECKING:
     from fastapi import FastAPI
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def app() -> FastAPI:
     app = get_app()
     async with LifespanManager(app):
         yield app
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def client(app: FastAPI) -> AsyncClient:
     port = app_settings.port
     base_url = f"http://translator:{port}"

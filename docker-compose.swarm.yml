@@ -1,18 +1,46 @@
 version: '3.9'
 
 services:
+  data-processor:
+    build: ./data-processor
+    environment:
+      - DB_URL=neo4j://db:7687
+      - LOG_LEVEL_SERVICES=INFO
+      - PORT=8000
+      - PROXY_REGISTRATION_ADDRESS=data-processor-proxy:5555
+      - PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_NAME=data_processor
+      - PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_PORT=8000
+      - PROXY_REGISTRATION_MAX_RETRIES=100
+      - PROXY_REGISTRATION_USER_NAME=admin
+      - PROXY_REGISTRATION_USER_PASSWORD=admin
+      - RELOAD=False
+      - WAIT_FOR_DB_ADDRESS=db:7474
+      - WAIT_FOR_PROXY_ADDRESS=data-processor-proxy:5555
+    image: madpeh/sre-data-processor
+    networks:
+      - data-processor-proxy-net
+      - db-net
+
+  data-processor-proxy:
+    build: ./data-processor-proxy
+    environment:
+      - API_PORT=5555
+      - LISTEN_DATA_PROCESSOR_PORT=8000
+    image: madpeh/sre-data-processor-proxy
+    networks:
+      - data-processor-proxy-net
+    volumes:
+      - data-processor-proxy-data:/usr/local/etc/haproxy
+
   db:
     environment:
-      - MONGODB_ROOT_USER=root
-      - MONGODB_ROOT_PASSWORD=root
-      - MONGODB_USERNAME=user
-      - MONGODB_PASSWORD=pass
-      - MONGODB_DATABASE=database
-    image: bitnami/mongodb:5.0.5-debian-10-r16
+      - NEO4J_AUTH=none
+      - NEO4JLABS_PLUGINS=["apoc"]
+    image: neo4j:4.4.2-community
     networks:
       - db-net
     volumes:
-      - db-data:/bitnami/mongodb
+      - db-data:/data
 
   graph-generator:
     build: ./graph-generator
@@ -23,6 +51,76 @@ services:
     image: madpeh/sre-graph-generator
     networks:
       - graph-generator-net
+
+  kafka:
+    build: ./kafka
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT
+      - KAFKA_CFG_OFFSET_METADATA_MAX_BYTES=10485760
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - WAIT_FOR_ZOOKEEPER_ADDRESS=zookeeper:2181
+    image: madpeh/sre-kafka
+    networks:
+      - kafka-net
+      - zookeeper-net
+    volumes:
+      - ./kafka/startup_scripts:/docker-entrypoint-initdb.d
+      - kafka-data:/bitnami/kafka
+
+  kafka-consumer:
+    build: ./kafka-consumer
+    environment:
+      - BATCH_TIMEOUT_MS=5000
+      - DB_URL=neo4j://db:7687
+      - KAFKA_ADDRESS=kafka:9092
+      - LOG_LEVEL_MAIN=INFO
+      - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
+      - WAIT_FOR_DB_ADDRESS=db:7474
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_output
+    image: madpeh/sre-kafka-consumer
+    networks:
+      - db-net
+      - kafka-net
+
+  kafka-streams:
+    build: ./kafka-streams
+    environment:
+      - BOOTSTRAP_SERVER=kafka:9092
+      - UPDATE_AGENT_INPUT_TOPIC_NAME=update_agent_input
+      - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_input,update_agent_output
+    image: madpeh/sre-kafka-streams
+    networks:
+      - kafka-net
+
+  kafka-topic-creator:
+    build: ./kafka-topic-creator
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      - BOOTSTRAP_SERVER=kafka:9092
+      - NUM_BROKERS=1
+      - UPDATE_AGENT_INPUT_TOPIC_NAME=update_agent_input
+      - UPDATE_AGENT_INPUT_TOPIC_REPLICATION_FACTOR=1
+      - UPDATE_AGENT_INPUT_TOPIC_PARTITIONS=1
+      - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
+      - UPDATE_AGENT_OUTPUT_TOPIC_REPLICATION_FACTOR=1
+      - UPDATE_AGENT_OUTPUT_TOPIC_PARTITIONS=1
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_ZOOKEEPER_ADDRESS=zookeeper:2181
+      - ZOOKEEPER_SERVER=zookeeper:2181
+    image: madpeh/sre-kafka-topic-creator
+    networks:
+      - kafka-net
+      - zookeeper-net
 
   redis:
     environment:
@@ -44,6 +142,7 @@ services:
       - REDIS_PASSWORD=password
       - RELOAD=False
       - TRANSLATOR_URL=http://translator:8000
+      - WAIT_FOR_REDIS_ADDRESS=redis:6379
     image: madpeh/sre-simulation-load-balancer
     networks:
       - graph-generator-net
@@ -54,6 +153,7 @@ services:
       - "80:8000"
 
   spade-instance:
+    build: ./spade-instance
     environment:
       - ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_URL=http://127.0.0.1:8000/internal/instance/status
       - ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_PERIOD=10
@@ -62,11 +162,13 @@ services:
       - AGENT_BACKUP_DELAY=5
       - AGENT_REGISTRATION_MAX_CONCURRENCY=10
       - AGENT_REGISTRATION_RETRY_AFTER=5
-      - API_BACKUP_URL=http://simulation-load-balancer:8000
       - COMMUNICATION_SERVER_PASSWORD=password
+      - KAFKA_ADDRESS=kafka:9092
+      - KAFKA_UPDATE_AGENT_INPUT_TOPIC_NAME=update_agent_input
       - LOG_LEVEL_AGENT=INFO
-      - LOG_LEVEL_HANDLERS=INFO
+      - LOG_LEVEL_KAFKA=INFO
       - LOG_LEVEL_UVICORN_ACCESS=WARNING
+      - LOG_LEVEL_REPEATED_TASKS=INFO
       - LOG_LEVEL_ROUTERS=INFO
       - LOG_LEVEL_SIMULATION_CODE_GENERATION=INFO
       - LOG_LEVEL_SIMULATION_INITIALIZATION=INFO
@@ -79,10 +181,12 @@ services:
       - SIMULATION_LOAD_BALANCER_URL=http://simulation-load-balancer:8000
       - SIMULATION_LOAD_BALANCER_ANNOUNCEMENT_PERIOD=10
       - SIMULATION_PROCESS_HEALTH_CHECK_PERIOD=5
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_input
     image: madpeh/sre-spade-instance
     networks:
       - spade-instance-net
-      - external-sre-cs-network
+      - external-sre-cs-net
 
   translator:
     build: ./translator
@@ -93,16 +197,33 @@ services:
     networks:
       - translator-net
 
+  zookeeper:
+    environment:
+    - ALLOW_ANONYMOUS_LOGIN=yes
+    image: bitnami/zookeeper:3.7.0-debian-10-r259
+    networks:
+      - zookeeper-net
+    volumes:
+      - zookeeper-data:/bitnami/zookeeper
+
 networks:
+  data-processor-proxy-net:
   db-net:
   graph-generator-net:
+  kafka-net:
+  kafka-connect-net:
   redis-net:
   spade-instance-net:
   translator-net:
-  external-sre-cs-network:
+  zookeeper-net:
+  external-sre-cs-net:
     external: true
     name: sre-cs
 
 volumes:
+  data-processor-proxy-data:
   db-data:
+  kafka-data:
+  kafka-connect-data:
   redis-data:
+  zookeeper-data:

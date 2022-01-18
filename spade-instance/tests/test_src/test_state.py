@@ -1,19 +1,30 @@
 from __future__ import annotations
 
+import asyncio
+from contextlib import nullcontext as does_not_raise
 from multiprocessing import Process
 from typing import TYPE_CHECKING
 from unittest.mock import Mock, patch
 
 import pytest
 
-from src.exceptions import SimulationException, SimulationStateNotSetException
-from src.state import get_app_simulation_state, set_app_simulation_state
+from src.exceptions import (
+    SimulationException,
+    SimulationIdNotSetException,
+    SimulationStateNotSetException,
+)
+from src.state import (
+    State,
+    create_simulation_state_shutdown_handler,
+    create_simulation_state_startup_handler,
+    get_app_simulation_state,
+    set_app_simulation_state,
+)
 from src.status import Status
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
 
-    from src.state import State
 
 pytestmark = pytest.mark.asyncio
 
@@ -80,6 +91,15 @@ async def test_get_simulation_id_returns_simulation_id(state: State) -> None:
     simulation_id = await state.get_simulation_id()
 
     assert state.simulation_id == simulation_id
+
+
+async def test_get_simulation_id_raises_exception_if_simulation_id_is_not_set(
+    state: State,
+) -> None:
+    state.simulation_id = None
+
+    with pytest.raises(SimulationIdNotSetException):
+        await state.get_simulation_id()
 
 
 @pytest.mark.parametrize("status", [Status.STARTING, Status.RUNNING])
@@ -261,3 +281,31 @@ def test_get_app_simulation_state_raises_simulation_state_not_set_exception_if_s
 ) -> None:
     with pytest.raises(SimulationStateNotSetException):
         get_app_simulation_state(app)
+
+
+async def test_simulation_state_startup_handler_sets_simulation_state(
+    app: FastAPI,
+) -> None:
+    with pytest.raises(SimulationStateNotSetException):
+        get_app_simulation_state(app)
+
+    simulation_state_startup_handler = create_simulation_state_startup_handler(app)
+    simulation_state_startup_handler()
+
+    with does_not_raise():
+        get_app_simulation_state(app)
+
+
+async def test_simulation_shutdown_handler_after_simulation_exception_is_raised_it_does_not_raise_exception(
+    app: FastAPI,
+) -> None:
+    state_mock = Mock(spec=State)
+    kill_simulation_process_future = asyncio.Future()
+    kill_simulation_process_future.set_exception(SimulationException(Status.IDLE, ""))
+    state_mock.kill_simulation_process.side_effect = kill_simulation_process_future
+
+    set_app_simulation_state(app, state_mock)
+    simulation_state_shutdown_handler = create_simulation_state_shutdown_handler(app)
+
+    with does_not_raise():
+        await simulation_state_shutdown_handler()

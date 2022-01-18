@@ -5,7 +5,7 @@ import os
 from typing import TYPE_CHECKING, Any, Coroutine, Dict, List
 
 import httpx
-import spade
+import orjson
 
 from src.settings import simulation_settings
 from src.status import Status
@@ -54,4 +54,8 @@ async def send_status(
     instance_status = get_instance_status(len(agents), broken_agents)
     logger.info(f"Sending status to spade api: {instance_status}")
     async with httpx.AsyncClient() as client:
-        await client.post(simulation_settings.status_url, json=instance_status)
+        await client.post(
+            simulation_settings.status_url,
+            headers={"Content-Type": "application/json"},
+            data=orjson.dumps(instance_status),
+        )

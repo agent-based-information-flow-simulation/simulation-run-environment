@@ -5,41 +5,18 @@ import os
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict
 
 import httpx
+import orjson
 import psutil
 from fastapi_utils.tasks import repeat_every
 
-from src.exceptions import SimulationException
 from src.settings import instance_settings, simulation_load_balancer_settings
-from src.state import State, get_app_simulation_state, set_app_simulation_state
+from src.state import get_app_simulation_state
 
 if TYPE_CHECKING:  # pragma: no cover
     from fastapi import FastAPI
 
 logger = logging.getLogger(__name__)
-logger.setLevel(level=os.environ.get("LOG_LEVEL_HANDLERS", "INFO"))
-
-
-def create_simulation_state_startup_handler(app: FastAPI) -> Callable[[], None]:
-    def simulation_state_startup_handler() -> None:
-        logger.info("Setting up simulation state")
-        set_app_simulation_state(app, State())
-        logger.info("Simulation state set up complete")
-
-    return simulation_state_startup_handler
-
-
-def create_simulation_state_shutdown_handler(
-    app: FastAPI,
-) -> Callable[[], Awaitable[None]]:
-    async def simulation_state_shutdown_handler() -> Awaitable[None]:
-        logger.info("Shutting down simulation")
-        try:
-            await get_app_simulation_state(app).kill_simulation_process()
-        except SimulationException as e:
-            logger.info(str(e))
-        logger.info("Simulation shutdown complete")
-
-    return simulation_state_shutdown_handler
+logger.setLevel(level=os.environ.get("LOG_LEVEL_REPEATED_TASKS", "INFO"))
 
 
 async def get_instance_information(app: FastAPI) -> Awaitable[Dict[str, Any]]:
@@ -74,7 +51,11 @@ def create_instance_state_handler(app: FastAPI) -> Callable[[], Awaitable[None]]
         )
         try:
             async with httpx.AsyncClient() as client:
-                await client.put(url, json=instance_state)
+                await client.put(
+                    url,
+                    headers={"Content-Type": "application/json"},
+                    data=orjson.dumps(instance_state),
+                )
         except Exception as e:
             logger.warn(f"Error while sending state to simulation load balancer: {e}")
 

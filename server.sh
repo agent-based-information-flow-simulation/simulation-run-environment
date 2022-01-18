@@ -1,18 +1,22 @@
 #!/bin/bash
 
 function usage() {
-    echo "Usage: $0 {init|join|network|start|scale|stop|clean|stats|services|publish|unit-test}"
+    echo "Usage: $0 {init|join|network|start|scale|stop|clean|stats|services|publish|unit-test|reload}"
     echo "       init: initialize the swarm cluster"
     echo "       join TOKEN IP:PORT: join the swarm cluster"
     echo "       network (REQUIRES SWARM CLUSTER): create shared networks for the swarm mode"
-    echo "       start [-n <N=1>: N spade instances] [-d: dev mode [-p: publish]] [-x: dev without swarm cluster [-s SERVICE: service to start]] (REQUIRES SWARM CLUSTER): start the server"
-    echo "       scale N: scale the server to N spade instances"
+    echo "       start [-d: dev mode [-p: publish]] (REQUIRES SWARM CLUSTER): start the server"
+    echo "       scale <SERVICE: data-processor, kafka-consumer, kafka-streams, spade-instance> <N: number of instances> (REQUIRES SWARM CLUSTER): scale the server to N SERVICE instances"
     echo "       stop: stop the server"
     echo "       clean: stop the server and remove all docker data"
     echo "       stats: print stats from all services"
     echo "       services: print all services"
     echo "       publish [-d: dev mode (REQUIRES SWARM CLUSTER)]: publish the images to a registry"
     echo "       unit-test SERVICE: run the unit-test suite for the given service"
+    echo "       reload SERVICE (REQUIRES DEV MODE): rebuild and update the service"
+    echo ""
+    echo "IMPORTANT: number of kafka-consumer/kafka-streams instances should be bigger or equal to the number of the topic partitions they read from"
+    echo "           see UPDATE_AGENT_OUTPUT_TOPIC_PARTITIONS for kafka-consumer, UPDATE_AGENT_INPUT_TOPIC_PARTITIONS for kafka-streams"
     exit 1
 }
 
@@ -50,29 +54,14 @@ function network() {
 
 function start() {
     DEV=0
-    N=1
     PUBLISH=0
-    SERVICE=
-    WITHOUT_SWARM=0
-    while getopts dn:ps:x opt; do
+    while getopts dp opt; do
         case $opt in
             d) DEV=1 ;;
-            n) N=$OPTARG ;;
             p) PUBLISH=1 ;;
-            s) SERVICE=$OPTARG ;;
-            x) WITHOUT_SWARM=1 ;;
             *) usage ;;
         esac
     done
-
-    if [ "$WITHOUT_SWARM" -eq "1" ]; then
-        if [ ! -z "$SERVICE" ]; then
-            docker-compose -f docker-compose.dev.yml up "$SERVICE" --build
-        else
-            docker-compose -f docker-compose.dev.yml up --build
-        fi
-        exit 0
-    fi
 
     if [ "$DEV" -eq "1" ]; then
         COMPOSE_FILE=docker-compose.dev.swarm.yml
@@ -82,7 +71,6 @@ function start() {
     fi
 
     if docker stack deploy -c ./"$COMPOSE_FILE" sre; then
-        if [ "$N" -gt "1" ]; then scale "$N"; fi
         echo "Server can be accessed on port 80"
     else
         echo ""
@@ -99,11 +87,14 @@ function start() {
 }
 
 function scale() {
-    if [ -z "${1}" ]; then
+    if [ -z "$1" ]; then
+        echo "missing service name"
+        usage
+    elif [ -z "$2" ]; then
         echo "missing number of instances"
         usage
     fi
-    docker service scale sre_spade-instance="${1}"
+    docker service scale sre_"${1}"="${2}"
 }
 
 function stop() {
@@ -125,6 +116,8 @@ function services() {
     echo ""
     echo "if you notice that some of the services are not up"
     echo "then stop the server, publish the images, create the shared networks, and start the server again"
+    echo ""
+    echo "sre_kafka-topic-creator is expected to run only once"
 }
 
 function publish() {
@@ -163,6 +156,16 @@ function unit-test() {
     docker-compose -f docker-compose.test.yml up "$1" --build
 }
 
+function reload() {
+    if [ -z "${1}" ]; then
+        echo "missing service name"
+        usage
+    fi
+    docker-compose -f docker-compose.dev.swarm.yml build "${1}" && \
+    docker-compose -f docker-compose.dev.swarm.yml push && \
+    docker service update sre_"${1}" --force
+}
+
 case "${1}" in
     init) init ;;
 
@@ -172,7 +175,7 @@ case "${1}" in
 
     start) start "${@:2}" ;;
 
-    scale) scale "${2}" ;;
+    scale) scale "${2}" "${3}" ;;
 
     stop) stop ;;
 
@@ -185,6 +188,8 @@ case "${1}" in
     publish) publish "${@:2}" ;;
 
     unit-test) unit-test "${2}" ;;
+
+    reload) reload "${2}" ;;
 
     *) usage ;;
 esac

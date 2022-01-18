@@ -7,9 +7,8 @@ from unittest.mock import Mock
 import pytest
 from starlette import status
 
-from src.dependencies import state
+from src.dependencies import kafka, state
 from src.exceptions import SimulationException
-from src.settings import backup_settings
 from src.state import State
 from src.status import Status
 
@@ -156,18 +155,17 @@ async def test_delete_simulation_after_simulation_exception_response_has_details
 async def test_backup_agent_data_after_sending_data_response_has_201_status_code(
     app: FastAPI, client: AsyncClient, httpx_mock: HTTPXMock
 ) -> None:
-    httpx_mock.add_response(
-        url=f"{backup_settings.api_backup_url}/simulations/123/data",
-        method="PUT",
-        status_code=200,
-        json={},
-    )
-
     state_mock = Mock()
     get_simulation_id_future = asyncio.Future()
     get_simulation_id_future.set_result("123")
     state_mock.get_simulation_id.return_value = get_simulation_id_future
     app.dependency_overrides[state] = lambda: state_mock
+
+    kafka_mock = Mock()
+    send_future = asyncio.Future()
+    send_future.set_result(None)
+    kafka_mock.send.return_value = send_future
+    app.dependency_overrides[kafka] = lambda: kafka_mock
 
     data = {"jid": "abc"}
 

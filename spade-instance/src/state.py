@@ -4,11 +4,15 @@ import asyncio
 import logging
 import os
 from multiprocessing import Process
-from typing import TYPE_CHECKING, Any, Coroutine, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Tuple
 
 import psutil
 
-from src.exceptions import SimulationException, SimulationStateNotSetException
+from src.exceptions import (
+    SimulationException,
+    SimulationIdNotSetException,
+    SimulationStateNotSetException,
+)
 from src.simulation.main import main
 from src.status import Status
 
@@ -63,6 +67,9 @@ class State:
     async def get_simulation_id(self) -> Coroutine[Any, Any, str]:
         logger.debug("Getting simulation id")
         async with self.mutex:
+            if self.simulation_id is None:
+                raise SimulationIdNotSetException()
+
             return self.simulation_id
 
     async def start_simulation_process(
@@ -132,3 +139,26 @@ def get_app_simulation_state(app: FastAPI) -> State:
         return app.state.simulation_state
     except AttributeError:
         raise SimulationStateNotSetException()
+
+
+def create_simulation_state_startup_handler(app: FastAPI) -> Callable[[], None]:
+    def simulation_state_startup_handler() -> None:
+        logger.info("Setting up simulation state")
+        set_app_simulation_state(app, State())
+        logger.info("Simulation state set up complete")
+
+    return simulation_state_startup_handler
+
+
+def create_simulation_state_shutdown_handler(
+    app: FastAPI,
+) -> Callable[[], Coroutine[Any, Any, None]]:
+    async def simulation_state_shutdown_handler() -> Coroutine[Any, Any, None]:
+        logger.info("Shutting down simulation")
+        try:
+            await get_app_simulation_state(app).kill_simulation_process()
+        except SimulationException as e:
+            logger.info(str(e))
+        logger.info("Simulation shutdown complete")
+
+    return simulation_state_shutdown_handler

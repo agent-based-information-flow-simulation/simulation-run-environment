@@ -1,10 +1,10 @@
 FROM python:3.10.1-slim-bullseye as build
 RUN apt-get update && \
     apt-get install --no-install-suggests --no-install-recommends --yes \
-    python3-pip=20.3.4* \
     gcc=4:10.2.1* \
-    libpython3-dev=3.9.2* && \
-    pip3 install --no-cache-dir pipenv && \
+    libpython3-dev=3.9.2* \
+    python3-pip=20.3.4* && \
+    pip3 install --no-cache-dir pipenv==2022.1.8 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -22,7 +22,8 @@ RUN apt-get update && \
 RUN useradd non-root-user
 USER non-root-user
 WORKDIR /api
-COPY entrypoint.sh /api/entrypoint.sh
+COPY ./startup_scripts /api/startup_scripts
+COPY ./entrypoint.sh /api/entrypoint.sh
 COPY --from=build-venv /.venv /venv
-COPY src /api/src
+COPY ./src /api/src
 ENTRYPOINT [ "/api/entrypoint.sh" ]

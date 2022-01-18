@@ -1,32 +1,50 @@
 version: '3.9'
 
 services:
+  data-processor:
+    build: ./data-processor
+    environment:
+      - DB_URL=neo4j://db:7687
+      - LOG_LEVEL_SERVICES=INFO
+      - PORT=8000
+      - PROXY_REGISTRATION_ADDRESS=data-processor-proxy:5555
+      - PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_NAME=data_processor
+      - PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_PORT=8000
+      - PROXY_REGISTRATION_MAX_RETRIES=100
+      - PROXY_REGISTRATION_USER_NAME=admin
+      - PROXY_REGISTRATION_USER_PASSWORD=admin
+      - RELOAD=True
+      - WAIT_FOR_DB_ADDRESS=db:7474
+      - WAIT_FOR_PROXY_ADDRESS=data-processor-proxy:5555
+    image: 127.0.0.1:5000/sre-data-processor
+    networks:
+      - data-processor-proxy-net
+      - db-net
+    volumes:
+      - ./data-processor/src:/api/src
+
+  data-processor-proxy:
+    build: ./data-processor-proxy
+    environment:
+      - API_PORT=5555
+      - LISTEN_DATA_PROCESSOR_PORT=8000
+    image: 127.0.0.1:5000/sre-data-processor-proxy
+    networks:
+      - data-processor-proxy-net
+    ports:
+      - "5556:5555"
+      - "8002:8000"
+
   db:
     environment:
-      - MONGODB_ROOT_USER=root
-      - MONGODB_ROOT_PASSWORD=root
-      - MONGODB_USERNAME=user
-      - MONGODB_PASSWORD=pass
-      - MONGODB_DATABASE=database
-    image: bitnami/mongodb:5.0.5-debian-10-r16
+      - NEO4J_AUTH=none
+      - NEO4JLABS_PLUGINS=["apoc"]
+    image: neo4j:4.4.2-community
     networks:
       - db-net
     ports:
-      - "27017:27017"
-    volumes:
-      - db-data:/bitnami/mongodb
-
-  db-gui:
-    environment:
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=root
-      - ME_CONFIG_MONGODB_SERVER=db
-      - ME_CONFIG_OPTIONS_EDITORTHEME=3024-night
-    image: mongo-express:0.54.0
-    networks:
-      - db-net
-    ports:
-      - "27018:8081"
+      - "7474:7474"
+      - "7687:7687"
 
   graph-generator:
     build: ./graph-generator
@@ -34,13 +52,93 @@ services:
       - COMMUNICATION_SERVER_DOMAIN=cs_entrypoint
       - PORT=8000
       - RELOAD=True
-    image: 127.0.0.1:5000/graph-generator
+    image: 127.0.0.1:5000/sre-graph-generator
     networks:
       - graph-generator-net
     ports:
       - "8001:8000"
     volumes:
       - ./graph-generator/src:/api/src
+
+  kafka:
+    build: ./kafka
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_OFFSET_METADATA_MAX_BYTES=10485760
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - WAIT_FOR_ZOOKEEPER_ADDRESS=zookeeper:2181
+    image: 127.0.0.1:5000/sre-kafka
+    networks:
+      - kafka-net
+      - zookeeper-net
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./kafka/startup_scripts:/docker-entrypoint-initdb.d
+
+  kafka-consumer:
+    build: ./kafka-consumer
+    environment:
+      - BATCH_TIMEOUT_MS=5000
+      - DB_URL=neo4j://db:7687
+      - KAFKA_ADDRESS=kafka:9092
+      - LOG_LEVEL_MAIN=INFO
+      - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
+      - WAIT_FOR_DB_ADDRESS=db:7474
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_output
+    image: 127.0.0.1:5000/sre-kafka-consumer
+    networks:
+      - db-net
+      - kafka-net
+
+  kafka-gui:
+    environment:
+      - KAFKA_BROKERCONNECT=kafka:9092
+    image: obsidiandynamics/kafdrop:3.29.0-SNAPSHOT
+    networks:
+      - kafka-net
+    ports:
+      - "9090:9000"
+
+  kafka-streams:
+    build: ./kafka-streams
+    environment:
+      - BOOTSTRAP_SERVER=kafka:9092
+      - UPDATE_AGENT_INPUT_TOPIC_NAME=update_agent_input
+      - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_input,update_agent_output
+    image: 127.0.0.1:5000/sre-kafka-streams
+    networks:
+      - kafka-net
+
+  kafka-topic-creator:
+    build: ./kafka-topic-creator
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      - BOOTSTRAP_SERVER=kafka:9092
+      - NUM_BROKERS=1
+      - UPDATE_AGENT_INPUT_TOPIC_NAME=update_agent_input
+      - UPDATE_AGENT_INPUT_TOPIC_REPLICATION_FACTOR=1
+      - UPDATE_AGENT_INPUT_TOPIC_PARTITIONS=1
+      - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
+      - UPDATE_AGENT_OUTPUT_TOPIC_REPLICATION_FACTOR=1
+      - UPDATE_AGENT_OUTPUT_TOPIC_PARTITIONS=1
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_ZOOKEEPER_ADDRESS=zookeeper:2181
+      - ZOOKEEPER_SERVER=zookeeper:2181
+    image: 127.0.0.1:5000/sre-kafka-topic-creator
+    networks:
+      - kafka-net
+      - zookeeper-net
 
   redis:
     environment:
@@ -50,8 +148,6 @@ services:
       - redis-net
     ports:
       - "6379:6379"
-    volumes:
-      - redis-data:/bitnami/redis
 
   simulation-load-balancer:
     build: ./simulation-load-balancer
@@ -64,8 +160,10 @@ services:
       - REDIS_PASSWORD=password
       - RELOAD=True
       - TRANSLATOR_URL=http://translator:8000
-    image: 127.0.0.1:5000/simulation-load-balancer
+      - WAIT_FOR_REDIS_ADDRESS=redis:6379
+    image: 127.0.0.1:5000/sre-simulation-load-balancer
     networks:
+      - data-processor-proxy-net
       - graph-generator-net
       - redis-net
       - spade-instance-net
@@ -85,11 +183,13 @@ services:
       - AGENT_BACKUP_DELAY=5
       - AGENT_REGISTRATION_MAX_CONCURRENCY=10
       - AGENT_REGISTRATION_RETRY_AFTER=5
-      - API_BACKUP_URL=http://simulation-load-balancer:8000
       - COMMUNICATION_SERVER_PASSWORD=password
+      - KAFKA_ADDRESS=kafka:9092
+      - KAFKA_UPDATE_AGENT_INPUT_TOPIC_NAME=update_agent_input
       - LOG_LEVEL_AGENT=INFO
-      - LOG_LEVEL_HANDLERS=INFO
+      - LOG_LEVEL_KAFKA=INFO
       - LOG_LEVEL_UVICORN_ACCESS=WARNING
+      - LOG_LEVEL_REPEATED_TASKS=INFO
       - LOG_LEVEL_ROUTERS=INFO
       - LOG_LEVEL_SIMULATION_CODE_GENERATION=INFO
       - LOG_LEVEL_SIMULATION_INITIALIZATION=INFO
@@ -102,8 +202,11 @@ services:
       - SIMULATION_LOAD_BALANCER_URL=http://simulation-load-balancer:8000
       - SIMULATION_LOAD_BALANCER_ANNOUNCEMENT_PERIOD=10
       - SIMULATION_PROCESS_HEALTH_CHECK_PERIOD=5
-    image: 127.0.0.1:5000/spade-instance
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_input
+    image: 127.0.0.1:5000/sre-spade-instance
     networks:
+      - kafka-net
       - spade-instance-net
       - external-sre-cs-net
     volumes:
@@ -114,7 +217,7 @@ services:
     environment:
       - PORT=8000
       - RELOAD=True
-    image: 127.0.0.1:5000/translator
+    image: 127.0.0.1:5000/sre-translator
     networks:
       - translator-net
     ports:
@@ -122,16 +225,26 @@ services:
     volumes:
       - ./translator/src:/api/src
 
+  zookeeper:
+    environment:
+    - ALLOW_ANONYMOUS_LOGIN=yes
+    image: bitnami/zookeeper:3.7.0-debian-10-r259
+    networks:
+      - zookeeper-net
+    ports:
+      - "2181:2181"
+      - "2182:8080"
+
 networks:
+  data-processor-proxy-net:
   db-net:
   graph-generator-net:
+  kafka-net:
+  kafka-connect-net:
   redis-net:
   spade-instance-net:
   translator-net:
+  zookeeper-net:
   external-sre-cs-net:
     external: true
     name: sre-cs
-
-volumes:
-  db-data:
-  redis-data:
