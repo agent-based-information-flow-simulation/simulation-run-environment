@@ -1,4 +1,5 @@
 FROM hseeberger/scala-sbt:11.0.13_1.6.1_2.12.15 AS build
+WORKDIR /build
 COPY . .
 RUN sbt assembly
 
@@ -14,5 +15,5 @@ USER non-root-user
 WORKDIR /app
 COPY ./entrypoint.sh /app/entrypoint.sh
 COPY ./startup_scripts /app/startup_scripts
-COPY --from=build /root/target /app/target
+COPY --from=build /build/target /app/target
 ENTRYPOINT [ "/app/entrypoint.sh" ]
