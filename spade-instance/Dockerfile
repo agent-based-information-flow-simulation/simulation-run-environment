@@ -17,6 +17,7 @@ RUN pipenv install --deploy
 FROM python:3.9.9-slim-bullseye
 RUN apt-get update && \
     apt-get install --no-install-suggests --no-install-recommends --yes \
+    kafkacat=1.6* \
     netcat=1.10*  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
