@@ -77,7 +77,7 @@ class Consumer:
     async def save_agent_updates_in_db(self, batch: List[Dict[str, Any]]) -> None:
         query = """
         UNWIND $batch AS event
-        MATCH (agent:Agent {jid: event.properties.jid, simulation_id: event.properties.simulation_id})-[relationship]->()
+        MATCH (agent:Agent {jid: event.properties.jid, simulation_id: event.properties.simulation_id})
         OPTIONAL MATCH (agent)-[relationship]->()
         SET agent = event.properties
         DELETE relationship
