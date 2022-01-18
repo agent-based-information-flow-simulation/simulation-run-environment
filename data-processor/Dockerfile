@@ -1,9 +1,9 @@
 FROM python:3.9.9-slim-bullseye as build
 RUN apt-get update && \
     apt-get install --no-install-suggests --no-install-recommends --yes \
-    python3-pip=20.3.4* \
     gcc=4:10.2.1* \
-    libpython3-dev=3.9.2* && \
+    libpython3-dev=3.9.2* \
+    python3-pip=20.3.4* && \
     pip3 install --no-cache-dir pipenv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
