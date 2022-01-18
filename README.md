@@ -32,7 +32,7 @@ Host port mapping: </br>
 * port `80` - simulation load balancer
 * port `2181` - zookeeper
 * port `2182` - zookeeper admin server
-* port `5555` - data processor proxy api
+* port `5556` - data processor proxy api
 * port `6379` - redis
 * port `7474` - neo4j http access
 * port `7687` - neo4j bolt access

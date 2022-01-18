@@ -5,6 +5,7 @@ import os
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict
 
 import httpx
+import orjson
 import psutil
 from fastapi_utils.tasks import repeat_every
 
@@ -50,7 +51,11 @@ def create_instance_state_handler(app: FastAPI) -> Callable[[], Awaitable[None]]
         )
         try:
             async with httpx.AsyncClient() as client:
-                await client.put(url, json=instance_state)
+                await client.put(
+                    url,
+                    headers={"Content-Type": "application/json"},
+                    data=orjson.dumps(instance_state),
+                )
         except Exception as e:
             logger.warn(f"Error while sending state to simulation load balancer: {e}")
 

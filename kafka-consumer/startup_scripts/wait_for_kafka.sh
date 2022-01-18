@@ -2,7 +2,6 @@
 # env variables:
 # - WAIT_FOR_KAFKA_ADDRESS
 
-echo "Waiting for Kafka"
 IFS=':' read -ra ADDRESS_SPLIT <<< "${WAIT_FOR_KAFKA_ADDRESS}"
 if [ "${#ADDRESS_SPLIT[@]}" -ne "2" ]; then
     echo "Expected argument format: HOST:PORT"

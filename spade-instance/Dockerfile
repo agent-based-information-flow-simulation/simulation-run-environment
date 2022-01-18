@@ -1,11 +1,11 @@
 FROM python:3.9.9-slim-bullseye as build
 RUN apt-get update && \
     apt-get install --no-install-suggests --no-install-recommends --yes \
-    git=1:2.30.2* \
-    python3-pip=20.3.4* \
     gcc=4:10.2.1* \
-    libpython3-dev=3.9.2* && \
-    pip3 install --no-cache-dir pipenv && \
+    git=1:2.30.2* \
+    libpython3-dev=3.9.2* \
+    python3-pip=20.3.4* && \
+    pip3 install --no-cache-dir pipenv==2022.1.8 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -17,6 +17,7 @@ RUN pipenv install --deploy
 FROM python:3.9.9-slim-bullseye
 RUN apt-get update && \
     apt-get install --no-install-suggests --no-install-recommends --yes \
+    kafkacat=1.6* \
     netcat=1.10*  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

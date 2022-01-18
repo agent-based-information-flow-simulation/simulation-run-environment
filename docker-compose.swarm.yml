@@ -29,9 +29,6 @@ services:
     image: madpeh/sre-data-processor-proxy
     networks:
       - data-processor-proxy-net
-    ports:
-      - "5555:5555"
-      - "8002:8000"
     volumes:
       - data-processor-proxy-data:/usr/local/etc/haproxy
 
@@ -42,9 +39,6 @@ services:
     image: neo4j:4.4.2-community
     networks:
       - db-net
-    ports:
-      - "7474:7474"
-      - "7687:7687"
     volumes:
       - db-data:/data
 
@@ -78,32 +72,21 @@ services:
       - ./kafka/startup_scripts:/docker-entrypoint-initdb.d
       - kafka-data:/bitnami/kafka
 
-  kafka-connect:
-    build: ./kafka-connect
+  kafka-consumer:
+    build: ./kafka-consumer
     environment:
-      # check ./kafka-connect/connectors for more configs
-      - CONNECT_BOOTSTRAP_SERVERS=kafka:9092
-      - CONNECT_GROUP_ID=update_agent_output_group
-      - CONNECT_CONFIG_STORAGE_TOPIC=kafka_connect_config
-      - CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1
-      - CONNECT_OFFSET_STORAGE_TOPIC=kafka_connect_offset
-      - CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1
-      - CONNECT_STATUS_STORAGE_TOPIC=kafka_connect_connectors_status
-      - CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1
-      - CONNECT_KEY_CONVERTER=org.apache.kafka.connect.storage.StringConverter
-      - CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
-      - CONNECT_REST_PORT=8083
-      - CONNECT_REST_ADVERTISED_HOST_NAME=kafka-connect
-      - CONNECT_PLUGIN_PATH=/usr/share/confluent-hub-components
-      - CONNECT_LOG4J_ROOT_LOGLEVEL=INFO
+      - BATCH_TIMEOUT_MS=5000
+      - DB_URL=neo4j://db:7687
+      - KAFKA_ADDRESS=kafka:9092
+      - LOG_LEVEL_MAIN=INFO
+      - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
+      - WAIT_FOR_DB_ADDRESS=db:7474
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
-    image: madpeh/sre-kafka-connect
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_output
+    image: madpeh/sre-kafka-consumer
     networks:
       - db-net
-      - kafka-connect-net
       - kafka-net
-    volumes:
-      - kafka-connect-data:/var/lib/confluent-control-center
 
   kafka-streams:
     build: ./kafka-streams
@@ -112,6 +95,7 @@ services:
       - UPDATE_AGENT_INPUT_TOPIC_NAME=update_agent_input
       - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_input,update_agent_output
     image: madpeh/sre-kafka-streams
     networks:
       - kafka-net
@@ -197,6 +181,8 @@ services:
       - SIMULATION_LOAD_BALANCER_URL=http://simulation-load-balancer:8000
       - SIMULATION_LOAD_BALANCER_ANNOUNCEMENT_PERIOD=10
       - SIMULATION_PROCESS_HEALTH_CHECK_PERIOD=5
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_input
     image: madpeh/sre-spade-instance
     networks:
       - spade-instance-net

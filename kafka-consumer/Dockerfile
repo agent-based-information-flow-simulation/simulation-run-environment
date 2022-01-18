@@ -11,13 +11,20 @@ RUN apt-get update && \
 FROM build as build-venv
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 PIPENV_VENV_IN_PROJECT=1
 COPY ./Pipfile* /
-RUN pipenv install --dev
+RUN pipenv install --deploy
 
 FROM python:3.9.9-slim-bullseye
-WORKDIR /api
-COPY entrypoint.test.sh /api/entrypoint.test.sh
-COPY pytest.ini /api/pytest.ini
+RUN apt-get update && \
+    apt-get install --no-install-suggests --no-install-recommends --yes \
+    kafkacat=1.6* \
+    netcat=1.10*  && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+RUN useradd non-root-user
+USER non-root-user
+WORKDIR /app
+COPY startup_scripts /app/startup_scripts
+COPY entrypoint.sh /app/entrypoint.sh
 COPY --from=build-venv /.venv /venv
-COPY src /api/src
-COPY tests /api/tests
-ENTRYPOINT [ "./entrypoint.test.sh" ]
+COPY src /app/src
+ENTRYPOINT [ "/app/entrypoint.sh" ]
