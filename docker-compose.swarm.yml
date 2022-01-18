@@ -29,9 +29,6 @@ services:
     image: madpeh/sre-data-processor-proxy
     networks:
       - data-processor-proxy-net
-    ports:
-      - "5555:5555"
-      - "8002:8000"
     volumes:
       - data-processor-proxy-data:/usr/local/etc/haproxy
 
@@ -42,9 +39,6 @@ services:
     image: neo4j:4.4.2-community
     networks:
       - db-net
-    ports:
-      - "7474:7474"
-      - "7687:7687"
     volumes:
       - db-data:/data
 
