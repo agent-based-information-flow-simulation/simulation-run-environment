@@ -19,6 +19,10 @@ logger.setLevel(level=os.environ.get("LOG_LEVEL_ROUTERS", "INFO"))
 
 router = APIRouter()
 
+@router.get("/healthcheck", status_code=200)
+async def healthcheck():
+    return {"response": "success"}
+
 
 @router.post("/simulation", status_code=201)
 async def create_simulation(
