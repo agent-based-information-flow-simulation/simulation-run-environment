@@ -32,7 +32,7 @@ services:
     networks:
       - data-processor-proxy-net
     ports:
-      - "5555:5555"
+      - "5556:5555"
       - "8002:8000"
 
   db:
