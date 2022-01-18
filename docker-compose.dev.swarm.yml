@@ -16,7 +16,7 @@ services:
       - RELOAD=True
       - WAIT_FOR_DB_ADDRESS=db:7474
       - WAIT_FOR_PROXY_ADDRESS=data-processor-proxy:5555
-    image: 127.0.0.1:5000/data-processor
+    image: 127.0.0.1:5000/sre-data-processor
     networks:
       - data-processor-proxy-net
       - db-net
@@ -28,7 +28,7 @@ services:
     environment:
       - API_PORT=5555
       - LISTEN_DATA_PROCESSOR_PORT=8000
-    image: 127.0.0.1:5000/data-processor-proxy
+    image: 127.0.0.1:5000/sre-data-processor-proxy
     networks:
       - data-processor-proxy-net
     ports:
@@ -52,7 +52,7 @@ services:
       - COMMUNICATION_SERVER_DOMAIN=cs_entrypoint
       - PORT=8000
       - RELOAD=True
-    image: 127.0.0.1:5000/graph-generator
+    image: 127.0.0.1:5000/sre-graph-generator
     networks:
       - graph-generator-net
     ports:
@@ -72,7 +72,7 @@ services:
       - KAFKA_CFG_OFFSET_METADATA_MAX_BYTES=10485760
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - WAIT_FOR_ZOOKEEPER_ADDRESS=zookeeper:2181
-    image: 127.0.0.1:5000/kafka
+    image: 127.0.0.1:5000/sre-kafka
     networks:
       - kafka-net
       - zookeeper-net
@@ -92,7 +92,7 @@ services:
       - WAIT_FOR_DB_ADDRESS=db:7474
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
       - WAIT_FOR_KAFKA_TOPICS=update_agent_output
-    image: 127.0.0.1:5000/kafka-consumer
+    image: 127.0.0.1:5000/sre-kafka-consumer
     networks:
       - db-net
       - kafka-net
@@ -114,7 +114,7 @@ services:
       - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
       - WAIT_FOR_KAFKA_TOPICS=update_agent_input,update_agent_output
-    image: 127.0.0.1:5000/kafka-streams
+    image: 127.0.0.1:5000/sre-kafka-streams
     networks:
       - kafka-net
 
@@ -135,7 +135,7 @@ services:
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
       - WAIT_FOR_ZOOKEEPER_ADDRESS=zookeeper:2181
       - ZOOKEEPER_SERVER=zookeeper:2181
-    image: 127.0.0.1:5000/kafka-topic-creator
+    image: 127.0.0.1:5000/sre-kafka-topic-creator
     networks:
       - kafka-net
       - zookeeper-net
@@ -161,7 +161,7 @@ services:
       - RELOAD=True
       - TRANSLATOR_URL=http://translator:8000
       - WAIT_FOR_REDIS_ADDRESS=redis:6379
-    image: 127.0.0.1:5000/simulation-load-balancer
+    image: 127.0.0.1:5000/sre-simulation-load-balancer
     networks:
       - data-processor-proxy-net
       - graph-generator-net
@@ -204,7 +204,7 @@ services:
       - SIMULATION_PROCESS_HEALTH_CHECK_PERIOD=5
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
       - WAIT_FOR_KAFKA_TOPICS=update_agent_input
-    image: 127.0.0.1:5000/spade-instance
+    image: 127.0.0.1:5000/sre-spade-instance
     networks:
       - kafka-net
       - spade-instance-net
@@ -217,7 +217,7 @@ services:
     environment:
       - PORT=8000
       - RELOAD=True
-    image: 127.0.0.1:5000/translator
+    image: 127.0.0.1:5000/sre-translator
     networks:
       - translator-net
     ports:
