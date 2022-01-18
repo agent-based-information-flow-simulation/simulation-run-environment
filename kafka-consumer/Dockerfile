@@ -22,9 +22,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 RUN useradd non-root-user
 USER non-root-user
-WORKDIR /api
-COPY startup_scripts /api/startup_scripts
-COPY entrypoint.sh /api/entrypoint.sh
+WORKDIR /app
+COPY startup_scripts /app/startup_scripts
+COPY entrypoint.sh /app/entrypoint.sh
 COPY --from=build-venv /.venv /venv
-COPY src /api/src
-ENTRYPOINT [ "/api/entrypoint.sh" ]
+COPY src /app/src
+ENTRYPOINT [ "/app/entrypoint.sh" ]

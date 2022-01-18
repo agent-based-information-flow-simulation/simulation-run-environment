@@ -14,10 +14,10 @@ COPY ./Pipfile* /
 RUN pipenv install --dev
 
 FROM python:3.9.9-slim-bullseye
-WORKDIR /api
-COPY entrypoint.test.sh /api/entrypoint.test.sh
-COPY pytest.ini /api/pytest.ini
+WORKDIR /app
+COPY entrypoint.test.sh /app/entrypoint.test.sh
+COPY pytest.ini /app/pytest.ini
 COPY --from=build-venv /.venv /venv
-COPY src /api/src
-COPY tests /api/tests
+COPY src /app/src
+COPY tests /app/tests
 ENTRYPOINT [ "./entrypoint.test.sh" ]
