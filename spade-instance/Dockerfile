@@ -5,7 +5,7 @@ RUN apt-get update && \
     git=1:2.30.2* \
     libpython3-dev=3.9.2* \
     python3-pip=20.3.4* && \
-    pip3 install --no-cache-dir pipenv && \
+    pip3 install --no-cache-dir pipenv==2022.1.8 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
