@@ -7,6 +7,7 @@ from aioredis import Redis
 from src.services.graph_generator import GraphGeneratorService
 from src.services.translator import TranslatorService
 from src.services.simulation_creator import SimulationCreatorService
+from src.services.data_processor import DataProcessorService
 
 if TYPE_CHECKING:  # pragma: no cover
     from src.services import BaseServiceWithoutRepository
@@ -30,6 +31,9 @@ graph_generator_service: Callable[
 simulation_creator_service: Callable[
     [], SimulationCreatorService
 ] = _get_service_without_repository(SimulationCreatorService)
+data_processor_service: Callable[
+    [], DataProcessorService
+] = _get_service_without_repository(DataProcessorService)
 
 
 def create_get_redis() -> Callable[[Request], Redis]:

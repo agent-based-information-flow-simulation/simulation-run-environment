@@ -154,6 +154,7 @@ services:
     build: ./simulation-load-balancer
     environment:
       - GRAPH_GENERATOR_URL=http://graph-generator:8000
+      - DATA_PROCESSOR_URL=http://data-processor-proxy:8000
       - LOG_LEVEL_HANDLERS=INFO
       - PORT=8000
       - REDIS_ADDRESS=redis

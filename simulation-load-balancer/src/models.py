@@ -8,9 +8,11 @@ from pydantic import BaseModel
 class CreateSpadeSimulation(BaseModel):
     aasm_code_lines: List[str]
 
+
 class CreatedSimulation(BaseModel):
     simulation_id: str
     info: str
+
 
 class InstanceState(BaseModel):
     status: str
@@ -20,13 +22,21 @@ class InstanceState(BaseModel):
     api_memory_usage_MiB: float
     simulation_memory_usage_MiB: float
 
+
 class InstanceData(InstanceState):
     key: str
+
 
 class InstanceErrorData(BaseModel):
     key: str
     status_code: str
     info: str
 
+
 class SimulationLoadBalancerState(BaseModel):
     instances: List[InstanceData]
+
+
+class StatusResponse(BaseModel):
+    status: str
+    status_code: str

@@ -21,22 +21,40 @@ def split_into_instances(graph: List[Dict[str, Any]], n: int) -> List[List[Dict[
     return batches
 
 
-# async def creation_task(simulation_id: str, agent_code_lines: List[str], agents: List[Dict[str, Any]], url: str) ->
-
-
 class SimulationCreatorService(BaseServiceWithoutRepository):
 
-    async def delete_simulation(self, instances: List[InstanceData]):
+    async def delete_simulation_instances(self, instances: List[InstanceData]):
         for instance in instances:
             url = f"http://{str(instance['key'])}:8000"
-            async with httpx.AsyncClient(base_url=url) as client:
+            async with httpx.AsyncClient(base_url=url, timeout=None) as client:
                 spade_instance_response = await client.delete(
                     "/simulation"
                 )
+                if spade_instance_response.status_code == status.HTTP_200_OK:
+                    logging.info(f"Deleted instance {str(instance['key'])}")
+                if spade_instance_response.status_code == status.HTTP_400_BAD_REQUEST:
+                    logging.info(f"No instance to delete {str(instance['key'])}")
+
+    async def check_health(self, instances: List[InstanceErrorData]) -> List[str]:
+        bad_instances = []
+        for instance in instances:
+            url = f"http://{str(instance['key'])}:8000"
+            try:
+                async with httpx.AsyncClient(base_url=url) as client:
+                    spade_instance_response = await client.get(
+                        "/healthcheck"
+                    )
+                    if spade_instance_response.status_code != status.HTTP_200_OK:
+                        logging.error(f"Got unexpected response from healthcheck {str(instance['key'])}")
+            except httpx.TimeoutException as e:
+                logging.error(f"Got timeout from healthcheck {str(instance['key'])}")
+            except httpx.ConnectError as e:
+                bad_instances.append(str(instance['key']))
+        return bad_instances
+
 
     async def create(self, agent_code_lines: List[str], graph: List[Dict[str, Any]],
-                     instances: List[InstanceData]) -> (str, List[InstanceErrorData]):
-        simulation_id = str(uuid4())[:10]
+                     instances: List[InstanceData], simulation_id: str) -> List[InstanceErrorData]:
         instance_agents = split_into_instances(graph, len(instances))
 
         error_instances = []
@@ -62,4 +80,4 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
                                       info=f"Connection timed out {instance['key']}")
                 )
 
-        return simulation_id,
+        return error_instances

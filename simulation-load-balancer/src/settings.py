@@ -28,8 +28,13 @@ class TranslatorSettings(BaseSettings):
 class GraphGeneratorSettings(BaseSettings):
     url: str = os.environ.get("GRAPH_GENERATOR_URL", "")
 
+
 class SimulationLoadBalancerSettings(BaseSettings):
     max_per_instance: str = os.environ.get("MAX_AGENTS_PER_INSTANCE", "50")
+
+
+class DataProcessorSettings(BaseSettings):
+    url: str = os.environ.get("DATA_PROCESSOR_URL", "")
 
 
 app_settings = AppSettings()
@@ -37,3 +42,4 @@ redis_settings = RedisSettings()
 translator_settings = TranslatorSettings()
 graph_generator_settings = GraphGeneratorSettings()
 simulation_load_balancer_settings = SimulationLoadBalancerSettings()
+data_processor_settings = DataProcessorSettings()
