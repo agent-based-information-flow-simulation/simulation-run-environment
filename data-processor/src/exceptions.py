@@ -18,6 +18,13 @@ class AgentTypeDoesNotExistException(Exception):
         super().__init__(
             f"[simulation {simulation_id}] Agent type {agent_type} does not exist"
         )
+        
+        
+class MessageTypeDoesNotExistException(Exception):
+    def __init__(self, simulation_id: str, message_type: str):
+        super().__init__(
+            f"[simulation {simulation_id}] Message type {message_type} does not exist"
+        )
 
 
 class InconsistentListDataTypesException(Exception):
