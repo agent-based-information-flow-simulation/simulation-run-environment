@@ -75,7 +75,7 @@ class StatisticsService(BaseService):
             )
         )
         data: List[int] = [
-            record["relationship_count"] for record in agent_type_list_length_records
+            record["list_length"] for record in agent_type_list_length_records
         ]
         return self._get_numerical_statistics(data)
 
@@ -88,7 +88,7 @@ class StatisticsService(BaseService):
             )
         )
         data: List[int] = [
-            record["relationship_count"]
+            record["message_list_length"]
             for record in agent_type_message_type_count_in_message_list_records
         ]
         return self._get_numerical_statistics(data)
