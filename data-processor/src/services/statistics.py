@@ -79,6 +79,20 @@ class StatisticsService(BaseService):
         ]
         return self._get_numerical_statistics(data)
 
+    async def _get_agent_type_message_type_count_in_message_list(
+        self, simulation_id: str, agent_type: str, message_list: str, message_type: str
+    ) -> Statistics:
+        agent_type_message_type_count_in_message_list_records = (
+            await self.repository.get_agent_type_message_type_count_in_message_list(
+                simulation_id, agent_type, message_list, message_type
+            )
+        )
+        data: List[int] = [
+            record["relationship_count"]
+            for record in agent_type_message_type_count_in_message_list_records
+        ]
+        return self._get_numerical_statistics(data)
+
     async def get_agent_type_statistics(
         self,
         simulation_id: str,
@@ -97,7 +111,9 @@ class StatisticsService(BaseService):
         if message_list and message_type and property_:
             ...
         elif message_list and message_type:
-            ...
+            return await self._get_agent_type_message_type_count_in_message_list(
+                simulation_id, agent_type, message_list, message_type
+            )
         elif message_list and property_ == "length":
             return await self._get_agent_type_list_length(
                 simulation_id, agent_type, message_list
