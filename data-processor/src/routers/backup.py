@@ -11,10 +11,10 @@ from src.exceptions import SimulationBackupAlreadyExistsException
 from src.models import CreateAgent
 from src.services.backup import BackupService
 
-router = APIRouter()
+router = APIRouter(prefix="/simulations")
 
 
-@router.post("/simulations/{simulation_id}/backup")
+@router.post("/{simulation_id}/backup")
 async def create_backup(
     simulation_id: str,
     agent_data: List[CreateAgent],
@@ -26,7 +26,7 @@ async def create_backup(
         raise HTTPException(400, str(e))
 
 
-@router.get("/simulations/{simulation_id}/backup")
+@router.get("/{simulation_id}/backup")
 async def get_backup(
     simulation_id: str,
     backup_service: BackupService = Depends(backup_service),
@@ -38,7 +38,7 @@ async def get_backup(
     )
 
 
-@router.delete("/simulations/{simulation_id}/backup")
+@router.delete("/{simulation_id}/backup")
 async def delete_backup(
     simulation_id: str,
     backup_service: BackupService = Depends(backup_service),
@@ -46,7 +46,7 @@ async def delete_backup(
     await backup_service.delete_backup(simulation_id)
 
 
-@router.get("/simulations/{simulation_id}/statistics/{agent_type}")
+@router.get("/{simulation_id}/statistics/{agent_type}")
 async def get_agent_type_simple_property(
     simulation_id: str,
     agent_type: str,
