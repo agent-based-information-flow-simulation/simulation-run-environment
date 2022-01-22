@@ -6,10 +6,10 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from fastapi.responses import ORJSONResponse
 
-from src.dependencies import simulation_service
+from src.dependencies import backup_service
 from src.exceptions import SimulationBackupAlreadyExistsException
 from src.models import CreateAgent
-from src.services import SimulationService
+from src.services.backup import BackupService
 
 router = APIRouter()
 
@@ -18,10 +18,10 @@ router = APIRouter()
 async def create_backup(
     simulation_id: str,
     agent_data: List[CreateAgent],
-    simulation_service: SimulationService = Depends(simulation_service),
+    backup_service: BackupService = Depends(backup_service),
 ):
     try:
-        await simulation_service.create_backup(simulation_id, agent_data)
+        await backup_service.create_backup(simulation_id, agent_data)
     except SimulationBackupAlreadyExistsException as e:
         raise HTTPException(400, str(e))
 
@@ -29,9 +29,9 @@ async def create_backup(
 @router.get("/simulations/{simulation_id}/backup")
 async def get_backup(
     simulation_id: str,
-    simulation_service: SimulationService = Depends(simulation_service),
+    backup_service: BackupService = Depends(backup_service),
 ):
-    backup = await simulation_service.get_backup(simulation_id)
+    backup = await backup_service.get_backup(simulation_id)
     return ORJSONResponse(
         headers={"Content-Type": "application/json"},
         content=backup,
@@ -41,6 +41,22 @@ async def get_backup(
 @router.delete("/simulations/{simulation_id}/backup")
 async def delete_backup(
     simulation_id: str,
-    simulation_service: SimulationService = Depends(simulation_service),
+    backup_service: BackupService = Depends(backup_service),
 ):
-    await simulation_service.delete_backup(simulation_id)
+    await backup_service.delete_backup(simulation_id)
+
+
+@router.get("/simulations/{simulation_id}/statistics/{agent_type}")
+async def get_agent_type_simple_property(
+    simulation_id: str,
+    agent_type: str,
+    property: str,
+    backup_service: BackupService = Depends(backup_service),
+):
+    properties = await backup_service.get_agent_type_properties(
+        simulation_id, agent_type
+    )
+    return ORJSONResponse(
+        headers={"Content-Type": "application/json"},
+        content=properties,
+    )
