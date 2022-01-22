@@ -9,6 +9,7 @@ from starlette.requests import Request
 from src.db.repositories.base import BaseRepository
 from src.services.backup import BackupService
 from src.services.base import BaseService
+from src.services.statistics import StatisticsService
 
 
 def get_db_driver(request: Request) -> Neo4jDriver:
@@ -47,3 +48,4 @@ def get_service(
 
 
 backup_service: Callable[[], BackupService] = get_service(BackupService)
+statistics_service: Callable[[], StatisticsService] = get_service(StatisticsService)
