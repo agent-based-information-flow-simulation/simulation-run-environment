@@ -93,6 +93,25 @@ class StatisticsService(BaseService):
         ]
         return self._get_numerical_statistics(data)
 
+    async def _get_agent_type_message_type_property_in_message_list(
+        self,
+        simulation_id: str,
+        agent_type: str,
+        message_list: str,
+        message_type: str,
+        property_: str,
+    ) -> Statistics:
+        agent_type_message_property_in_message_list_records = (
+            await self.repository.get_agent_type_message_type_property_in_message_list(
+                simulation_id, agent_type, message_list, message_type, property_
+            )
+        )
+        data: List[int] = [
+            record["property"]
+            for record in agent_type_message_property_in_message_list_records
+        ]
+        return self._get_numerical_statistics(data)
+
     async def get_agent_type_statistics(
         self,
         simulation_id: str,
@@ -109,7 +128,9 @@ class StatisticsService(BaseService):
             raise AgentTypeDoesNotExistException(simulation_id, agent_type)
 
         if message_list and message_type and property_:
-            ...
+            return await self._get_agent_type_message_type_property_in_message_list(
+                simulation_id, agent_type, message_list, message_type, property_
+            )
         elif message_list and message_type:
             return await self._get_agent_type_message_type_count_in_message_list(
                 simulation_id, agent_type, message_list, message_type
