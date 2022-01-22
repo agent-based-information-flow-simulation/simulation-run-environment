@@ -13,6 +13,8 @@ from src.exceptions import (
     AgentTypeDoesNotExistException,
     InconsistentListDataTypesException,
     InvalidAgentTypeStatisticsRequestException,
+    InvalidMessageTypeStatisticsRequestException,
+    MessageTypeDoesNotExistException,
     SimulationBackupDoesNotExistException,
 )
 from src.models import Statistics
@@ -191,4 +193,45 @@ class StatisticsService(BaseService):
                 message_list,
                 message_type,
                 connection_list,
+            )
+
+    async def _get_message_type_property(
+        self, simulation_id: str, message_type: str, property_: str
+    ) -> Statistics:
+        message_type_property_record = await self.repository.get_message_type_property(
+            simulation_id, message_type, property_
+        )
+        data: List[Any] = [
+            record["property"] for record in message_type_property_record
+        ]
+        if all(isinstance(item, (int, float)) for item in data):
+            return self._get_numerical_statistics(data)
+        elif all(isinstance(item, str) for item in data):
+            return self._get_categorical_statistics(data)
+        else:
+            raise InconsistentListDataTypesException(
+                simulation_id, message_type, property_, data
+            )
+
+    async def get_message_type_statistics(
+        self,
+        simulation_id: str,
+        message_type: str,
+        property_: str,
+    ) -> Statistics:
+        if not await self.repository.simulation_exists(simulation_id):
+            raise SimulationBackupDoesNotExistException(simulation_id)
+
+        if not await self.repository.message_type_exists(simulation_id, message_type):
+            raise MessageTypeDoesNotExistException(simulation_id, message_type)
+
+        if property_:
+            return await self._get_message_type_property(
+                simulation_id, message_type, property_
+            )
+        else:
+            raise InvalidMessageTypeStatisticsRequestException(
+                simulation_id,
+                message_type,
+                property_,
             )
