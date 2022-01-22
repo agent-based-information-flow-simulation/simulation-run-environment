@@ -14,3 +14,12 @@ class CreateAgent(BaseModel):
     class Config:
         json_loads = orjson.loads
         json_dumps = orjson.dumps
+
+
+class Statistics(BaseModel):
+    labels: List[str]
+    data: List[float]
+
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson.dumps
