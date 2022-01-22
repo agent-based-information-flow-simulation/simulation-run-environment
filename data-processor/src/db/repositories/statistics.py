@@ -119,3 +119,26 @@ class StatisticsRepository(BaseRepository):
         )
 
         return [record async for record in records]
+
+    async def get_agent_type_message_type_property_in_all_message_lists(
+        self,
+        simulation_id: str,
+        agent_type: str,
+        message_type: str,
+        property_: str,
+    ) -> List[Record]:
+        get_agent_type_message_type_property_in_all_message_lists_query = """
+        MATCH (agent:Agent {simulation_id: $simulation_id, type: $agent_type})-[message {type: $message_type}]->()
+        RETURN message[$property] as property
+        ORDER BY property
+        """
+
+        records = await self.session.run(
+            get_agent_type_message_type_property_in_all_message_lists_query,
+            simulation_id=simulation_id,
+            agent_type=agent_type,
+            message_type=message_type,
+            property=property_,
+        )
+
+        return [record async for record in records]

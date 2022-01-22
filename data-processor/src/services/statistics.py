@@ -106,11 +106,41 @@ class StatisticsService(BaseService):
                 simulation_id, agent_type, message_list, message_type, property_
             )
         )
-        data: List[int] = [
+        data: List[Any] = [
             record["property"]
             for record in agent_type_message_property_in_message_list_records
         ]
-        return self._get_numerical_statistics(data)
+        if all(isinstance(item, (int, float)) for item in data):
+            return self._get_numerical_statistics(data)
+        elif all(isinstance(item, str) for item in data):
+            return self._get_categorical_statistics(data)
+        else:
+            raise InconsistentListDataTypesException(
+                simulation_id, agent_type, property_, data
+            )
+
+    async def _get_agent_type_message_type_property_in_all_message_lists(
+        self,
+        simulation_id: str,
+        agent_type: str,
+        message_type: str,
+        property_: str,
+    ) -> Statistics:
+        agent_type_message_type_property_in_all_message_lists_records = await self.repository.get_agent_type_message_type_property_in_all_message_lists(
+            simulation_id, agent_type, message_type, property_
+        )
+        data: List[Any] = [
+            record["property"]
+            for record in agent_type_message_type_property_in_all_message_lists_records
+        ]
+        if all(isinstance(item, (int, float)) for item in data):
+            return self._get_numerical_statistics(data)
+        elif all(isinstance(item, str) for item in data):
+            return self._get_categorical_statistics(data)
+        else:
+            raise InconsistentListDataTypesException(
+                simulation_id, agent_type, property_, data
+            )
 
     async def get_agent_type_statistics(
         self,
@@ -140,7 +170,11 @@ class StatisticsService(BaseService):
                 simulation_id, agent_type, message_list
             )
         elif message_type and property_:
-            ...
+            return (
+                await self._get_agent_type_message_type_property_in_all_message_lists(
+                    simulation_id, agent_type, message_type, property_
+                )
+            )
         elif connection_list and property_ == "length":
             return await self._get_agent_type_list_length(
                 simulation_id, agent_type, connection_list
