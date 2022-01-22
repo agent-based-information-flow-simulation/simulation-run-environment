@@ -19,6 +19,7 @@ class BackupRepository(BaseRepository):
         records = await self.session.run(
             get_single_agent_from_simulation_query, simulation_id=simulation_id
         )
+
         return len([record async for record in records]) != 0
 
     async def create_agents(
