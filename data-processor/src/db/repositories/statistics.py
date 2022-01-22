@@ -37,6 +37,21 @@ class StatisticsRepository(BaseRepository):
 
         return len([record async for record in records]) != 0
 
+    async def message_type_exists(self, simulation_id: str, message_type: str) -> bool:
+        get_single_message_type_from_simulation_query = """
+        MATCH (agent:Agent {simulation_id: $simulation_id})-[message {type: $message_type}]->()
+        RETURN message
+        LIMIT 1
+        """
+
+        records = await self.session.run(
+            get_single_message_type_from_simulation_query,
+            simulation_id=simulation_id,
+            message_type=message_type,
+        )
+
+        return len([record async for record in records]) != 0
+
     async def get_agent_type_property(
         self, simulation_id: str, agent_type: str, property_: str
     ) -> Record | None:
@@ -137,6 +152,27 @@ class StatisticsRepository(BaseRepository):
             get_agent_type_message_type_property_in_all_message_lists_query,
             simulation_id=simulation_id,
             agent_type=agent_type,
+            message_type=message_type,
+            property=property_,
+        )
+
+        return [record async for record in records]
+
+    async def get_message_type_property(
+        self,
+        simulation_id: str,
+        message_type: str,
+        property_: str,
+    ) -> List[Record]:
+        get_message_type_property_query = """
+        MATCH (agent:Agent {simulation_id: $simulation_id})-[message {type: $message_type}]->()
+        RETURN message[$property] as property
+        ORDER BY property
+        """
+
+        records = await self.session.run(
+            get_message_type_property_query,
+            simulation_id=simulation_id,
             message_type=message_type,
             property=property_,
         )
