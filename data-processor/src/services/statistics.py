@@ -29,18 +29,15 @@ class StatisticsService(BaseService):
     def repository(self) -> repository_type:
         return self._repository
 
-    def _get_numerical_statistics(self, data: List[float]) -> Statistics:
+    def _get_numerical_statistics(self, data: List[int | float]) -> Statistics:
         # Sturge's rule
         num_bins = round(1 + 3.322 * math.log(len(data)))
         histogram, bin_edges = np.histogram(data, bins=num_bins)
 
-        if len(bin_edges) == 2:
-            labels = [f"[{bin_edges[0]} - {bin_edges[1]}]"]
-        else:
-            labels = []
-            for i in range(len(bin_edges) - 2):
-                labels.append(f"[{bin_edges[i]} - {bin_edges[i + 1]})")
-            labels.append(f"[{bin_edges[-2]} - {bin_edges[-1]}]")
+        labels = []
+        for i in range(len(bin_edges) - 2):
+            labels.append(f"[{bin_edges[i]} - {bin_edges[i + 1]})")
+        labels.append(f"[{bin_edges[-2]} - {bin_edges[-1]}]")
 
         return Statistics(data=list(histogram), labels=labels)
 
@@ -69,6 +66,19 @@ class StatisticsService(BaseService):
                 simulation_id, agent_type, property_, data
             )
 
+    async def _get_agent_type_list_length(
+        self, simulation_id: str, agent_type: str, list_name: str
+    ) -> Statistics:
+        agent_type_list_length_records = (
+            await self.repository.get_agent_type_list_length(
+                simulation_id, agent_type, list_name
+            )
+        )
+        data: List[int] = [
+            record["relationship_count"] for record in agent_type_list_length_records
+        ]
+        return self._get_numerical_statistics(data)
+
     async def get_agent_type_statistics(
         self,
         simulation_id: str,
@@ -89,11 +99,15 @@ class StatisticsService(BaseService):
         elif message_list and message_type:
             ...
         elif message_list and property_ == "length":
-            ...
+            return await self._get_agent_type_list_length(
+                simulation_id, agent_type, message_list
+            )
         elif message_type and property_:
             ...
         elif connection_list and property_ == "length":
-            ...
+            return await self._get_agent_type_list_length(
+                simulation_id, agent_type, connection_list
+            )
         elif property_:
             return await self._get_agent_type_property(
                 simulation_id, agent_type, property_
