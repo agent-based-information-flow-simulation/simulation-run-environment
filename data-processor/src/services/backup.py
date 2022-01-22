@@ -5,7 +5,10 @@ import os
 from typing import Any, Dict, List
 
 from src.db.repositories.backup import BackupRepository
-from src.exceptions import SimulationBackupAlreadyExistsException
+from src.exceptions import (
+    SimulationBackupAlreadyExistsException,
+    SimulationBackupDoesNotExistException,
+)
 from src.models import CreateAgent
 from src.services.base import BaseService
 
@@ -54,9 +57,15 @@ class BackupService(BaseService):
         )
 
     async def delete_backup(self, simulation_id: str) -> None:
+        if not await self.repository.simulation_exists(simulation_id):
+            raise SimulationBackupDoesNotExistException(simulation_id)
+
         await self.repository.delete_agents(simulation_id)
 
     async def get_backup(self, simulation_id: str) -> List[Dict[str, Any]]:
+        if not await self.repository.simulation_exists(simulation_id):
+            raise SimulationBackupDoesNotExistException(simulation_id)
+
         (
             agent_records,
             relationship_records,
