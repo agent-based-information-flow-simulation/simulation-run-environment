@@ -11,7 +11,7 @@ from src.exceptions import SimulationBackupAlreadyExistsException
 from src.models import CreateAgent
 from src.services.backup import BackupService
 
-router = APIRouter(prefix="/simulations")
+router = APIRouter(prefix="/simulations", default_response_class=ORJSONResponse)
 
 
 @router.post("/{simulation_id}/backup")
@@ -31,11 +31,7 @@ async def get_backup(
     simulation_id: str,
     backup_service: BackupService = Depends(backup_service),
 ):
-    backup = await backup_service.get_backup(simulation_id)
-    return ORJSONResponse(
-        headers={"Content-Type": "application/json"},
-        content=backup,
-    )
+    return await backup_service.get_backup(simulation_id)
 
 
 @router.delete("/{simulation_id}/backup")
