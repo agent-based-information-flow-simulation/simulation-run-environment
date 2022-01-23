@@ -32,9 +32,7 @@ class StatisticsService(BaseService):
         return self._repository
 
     def _get_numerical_statistics(self, data: List[int | float]) -> Statistics:
-        # Sturge's rule
-        num_bins = round(1 + 3.322 * math.log(len(data)))
-        histogram, bin_edges = np.histogram(data, bins=num_bins)
+        histogram, bin_edges = np.histogram(data)
 
         labels = []
         for i in range(len(bin_edges) - 2):
