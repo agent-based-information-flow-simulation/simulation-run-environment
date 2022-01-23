@@ -39,7 +39,6 @@ Host port mapping: </br>
 * port `8000` - translator
 * port `8001` - graph generator
 * port `8002` - data processor (via proxy)
-* port `8083` - kafka connect api
 * port `9000` - spade instance
 * port `9090` - kafka gui
 * port `9093` - kafka

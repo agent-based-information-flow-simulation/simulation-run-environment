@@ -2,21 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List, Tuple
 
+from src.db.repositories.base import BaseRepository
+
 if TYPE_CHECKING:
-    from neo4j import AsyncSession
     from neo4j.data import Record
 
 
-class BaseRepository:
-    def __init__(self, session: AsyncSession):
-        self._session = session
-
-    @property
-    def session(self) -> AsyncSession:
-        return self._session
-
-
-class SimulationRepository(BaseRepository):
+class BackupRepository(BaseRepository):
     async def simulation_exists(self, simulation_id: str) -> bool:
         get_single_agent_from_simulation_query = """
         MATCH (agent:Agent {simulation_id: $simulation_id})
@@ -27,6 +19,7 @@ class SimulationRepository(BaseRepository):
         records = await self.session.run(
             get_single_agent_from_simulation_query, simulation_id=simulation_id
         )
+
         return len([record async for record in records]) != 0
 
     async def create_agents(
@@ -40,6 +33,10 @@ class SimulationRepository(BaseRepository):
 
         create_simulation_id_index_query = """
         CREATE INDEX idx_simulation_id IF NOT EXISTS FOR (agent:Agent) on (agent.simulation_id)
+        """
+
+        create_type_index_query = """
+        CREATE INDEX idx_type IF NOT EXISTS FOR (agent:Agent) on (agent.type)
         """
 
         create_agents_query = """
@@ -58,6 +55,7 @@ class SimulationRepository(BaseRepository):
 
         await self.session.run(create_jid_index_query)
         await self.session.run(create_simulation_id_index_query)
+        await self.session.run(create_type_index_query)
         await self.session.run(
             create_agents_query,
             agents_properties=agents_properties,

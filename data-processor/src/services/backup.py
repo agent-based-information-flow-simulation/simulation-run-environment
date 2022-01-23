@@ -2,29 +2,22 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List
 
-from src.db.repositories import BaseRepository, SimulationRepository
-from src.exceptions import SimulationBackupAlreadyExistsException
+from src.db.repositories.backup import BackupRepository
+from src.exceptions import (
+    SimulationBackupAlreadyExistsException,
+    SimulationBackupDoesNotExistException,
+)
 from src.models import CreateAgent
+from src.services.base import BaseService
 
 logger = logging.getLogger(__name__)
-logger.setLevel(level=os.environ.get("LOG_LEVEL_SERVICES", "INFO"))
+logger.setLevel(level=os.environ.get("LOG_LEVEL_SERVICES_BACKUP", "INFO"))
 
 
-class BaseService:
-    repository_type: Type[BaseRepository] = BaseRepository
-
-    def __init__(self, repository: BaseRepository) -> None:
-        self._repository = repository
-
-    @property
-    def repository(self) -> repository_type:
-        ...
-
-
-class SimulationService(BaseService):
-    repository_type = SimulationRepository
+class BackupService(BaseService):
+    repository_type = BackupRepository
 
     @property
     def repository(self) -> repository_type:
@@ -64,9 +57,15 @@ class SimulationService(BaseService):
         )
 
     async def delete_backup(self, simulation_id: str) -> None:
+        if not await self.repository.simulation_exists(simulation_id):
+            raise SimulationBackupDoesNotExistException(simulation_id)
+
         await self.repository.delete_agents(simulation_id)
 
     async def get_backup(self, simulation_id: str) -> List[Dict[str, Any]]:
+        if not await self.repository.simulation_exists(simulation_id):
+            raise SimulationBackupDoesNotExistException(simulation_id)
+
         (
             agent_records,
             relationship_records,
