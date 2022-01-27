@@ -50,6 +50,12 @@ function network() {
     else
         echo "[simulation run environment <-> communication server] failed to create"
     fi
+
+    if docker network create --driver overlay --attachable li-sre; then
+        echo "[local interface <-> simulation run environment] created"
+    else
+        echo "[local interface <-> simulation run environment] failed to create"
+    fi
 }
 
 function start() {
@@ -71,7 +77,7 @@ function start() {
     fi
 
     if docker stack deploy -c ./"$COMPOSE_FILE" sre; then
-        echo "Server can be accessed on port 80"
+        echo "OK"
     else
         echo ""
         echo "failed to start the server"

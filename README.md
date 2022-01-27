@@ -29,7 +29,6 @@ Use the `server.sh` utility script.
 
 After starting the `.dev.swarm.yml` compose file, the server in accessible on localhost. </br>
 Host port mapping: </br>
-* port `80` - simulation load balancer
 * port `2181` - zookeeper
 * port `2182` - zookeeper admin server
 * port `5556` - data processor proxy api
@@ -39,6 +38,9 @@ Host port mapping: </br>
 * port `8000` - translator
 * port `8001` - graph generator
 * port `8002` - data processor (via proxy)
+* port `8003` - simulation load balancer
+* port `8888` - entrypoint (to simulation load balancer and data processor proxy)
+* port `8889` - entrypoint (to neo4j)
 * port `9000` - spade instance
 * port `9090` - kafka gui
 * port `9093` - kafka
