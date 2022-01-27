@@ -56,9 +56,6 @@ services:
     networks:
       - entrypoint-net
       - external-li-sre-net
-    ports:
-      - "8888:80"
-      - "8889:7687"
     volumes:
       - entrypoint-data:/usr/local/etc/haproxy
 

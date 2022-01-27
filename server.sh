@@ -71,7 +71,7 @@ function start() {
     fi
 
     if docker stack deploy -c ./"$COMPOSE_FILE" sre; then
-        echo "Server can be accessed on port 80"
+        echo "OK"
     else
         echo ""
         echo "failed to start the server"
