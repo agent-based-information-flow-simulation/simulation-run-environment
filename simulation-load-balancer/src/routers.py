@@ -43,7 +43,7 @@ async def get_instance_states(
     return SimulationLoadBalancerState(instances=instances)
 
 
-@router.post("/simulations", response_model=CreatedSimulation, status_code=201)
+@router.post("/api/simulations", response_model=CreatedSimulation, status_code=201)
 async def create_simulation(
         simulation_data: CreateSpadeSimulation,
         translator_service: TranslatorService = Depends(translator_service),
