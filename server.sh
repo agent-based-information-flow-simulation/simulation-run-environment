@@ -50,6 +50,12 @@ function network() {
     else
         echo "[simulation run environment <-> communication server] failed to create"
     fi
+
+    if docker network create --driver overlay --attachable li-sre; then
+        echo "[local interface <-> simulation run environment] created"
+    else
+        echo "[local interface <-> simulation run environment] failed to create"
+    fi
 }
 
 function start() {
