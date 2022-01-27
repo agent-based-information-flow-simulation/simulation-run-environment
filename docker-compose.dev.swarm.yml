@@ -27,10 +27,11 @@ services:
     build: ./data-processor-proxy
     environment:
       - API_PORT=5555
-      - LISTEN_DATA_PROCESSOR_PORT=8000
+      - DATA_PROCESSOR_LISTEN_PORT=8000
     image: 127.0.0.1:5000/sre-data-processor-proxy
     networks:
       - data-processor-proxy-net
+      - entrypoint-net
     ports:
       - "5556:5555"
       - "8002:8000"
@@ -42,9 +43,26 @@ services:
     image: neo4j:4.4.2-community
     networks:
       - db-net
+      - entrypoint-net
     ports:
       - "7474:7474"
       - "7687:7687"
+
+  entrypoint:
+    build: ./entrypoint
+    environment:
+      - API_LISTEN_PORT=80
+      - DATA_PROCESSOR_PROXY_BACKEND_PORT=8000
+      - DB_LISTEN_PORT=7687
+      - DB_BACKEND_PORT=7687
+      - SIMULATION_LOAD_BALANCER_BACKEND_PORT=8000
+    image: 127.0.0.1:5000/sre-entrypoint
+    networks:
+      - entrypoint-net
+      - external-li-sre-net
+    ports:
+      - "8888:80"
+      - "8889:7687"
 
   graph-generator:
     build: ./graph-generator
@@ -164,12 +182,13 @@ services:
     image: 127.0.0.1:5000/sre-simulation-load-balancer
     networks:
       - data-processor-proxy-net
+      - entrypoint-net
       - graph-generator-net
       - redis-net
       - spade-instance-net
       - translator-net
     ports:
-      - "80:8000"
+      - "8003:8000"
     volumes:
       - ./simulation-load-balancer/src:/api/src
 
@@ -238,6 +257,7 @@ services:
 networks:
   data-processor-proxy-net:
   db-net:
+  entrypoint-net:
   graph-generator-net:
   kafka-net:
   kafka-connect-net:
@@ -248,3 +268,6 @@ networks:
   external-sre-cs-net:
     external: true
     name: sre-cs
+  external-li-sre-net:
+    external: true
+    name: li-sre
