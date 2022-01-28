@@ -273,9 +273,3 @@ networks:
   external-li-sre-net:
     external: true
     name: li-sre
-<<<<<<< HEAD
-
-volumes:
-  db-data:
-=======
->>>>>>> origin/main
