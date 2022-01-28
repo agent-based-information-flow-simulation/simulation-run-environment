@@ -6,8 +6,10 @@ from fastapi import Depends
 from neo4j import AsyncSession, Neo4jDriver
 from starlette.requests import Request
 
-from src.db.repositories import BaseRepository
-from src.services import BaseService, SimulationService
+from src.db.repositories.base import BaseRepository
+from src.services.backup import BackupService
+from src.services.base import BaseService
+from src.services.statistics import StatisticsService
 
 
 def get_db_driver(request: Request) -> Neo4jDriver:
@@ -45,4 +47,5 @@ def get_service(
     return _get_service
 
 
-simulation_service: Callable[[], SimulationService] = get_service(SimulationService)
+backup_service: Callable[[], BackupService] = get_service(BackupService)
+statistics_service: Callable[[], StatisticsService] = get_service(StatisticsService)
