@@ -12,7 +12,12 @@ class CreateSpadeSimulation(BaseModel):
 class CreatedSimulation(BaseModel):
     simulation_id: str
     info: str
+    status: str
 
+class SimulationData(CreatedSimulation):
+    simulation_id: str
+    info: str = None
+    status: str
 
 class InstanceState(BaseModel):
     status: str
@@ -35,6 +40,7 @@ class InstanceErrorData(BaseModel):
 
 class SimulationLoadBalancerState(BaseModel):
     instances: List[InstanceData]
+    simulations: List[SimulationData]
 
 
 class StatusResponse(BaseModel):

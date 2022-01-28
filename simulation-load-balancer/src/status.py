@@ -8,3 +8,5 @@ class Status(Enum):
     DEAD = "DEAD"
     STARTING = "STARTING"
     RUNNING = "RUNNING"
+    ACTIVE = "ACTIVE"
+    DEACTIVATED = "DEACTIVATED"

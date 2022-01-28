@@ -23,19 +23,31 @@ def split_into_instances(graph: List[Dict[str, Any]], n: int) -> List[List[Dict[
 
 class SimulationCreatorService(BaseServiceWithoutRepository):
 
-    async def delete_simulation_instances(self, instances: List[InstanceData]):
+    # noinspection PyBroadException
+    async def delete_simulation_instances(self, instances: List[InstanceData]) -> List[InstanceErrorData]:
+        error_instances = []
         for instance in instances:
             url = f"http://{str(instance['key'])}:8000"
-            async with httpx.AsyncClient(base_url=url, timeout=None) as client:
-                spade_instance_response = await client.delete(
-                    "/simulation"
+            try:
+                async with httpx.AsyncClient(base_url=url, timeout=None) as client:
+                    spade_instance_response = await client.delete(
+                        "/simulation"
+                    )
+                    if spade_instance_response.status_code == status.HTTP_200_OK:
+                        logging.info(f"Deleted instance {str(instance['key'])}")
+                    else:
+                        error_instances.append(
+                            InstanceErrorData(key=instance['key'], status_code=str(spade_instance_response.status_code),
+                                              info=f"DeletionError: {instance['key']}")
+                        )
+            except Exception:
+                error_instances.append(
+                    InstanceErrorData(key=instance['key'], status_code="418",
+                                      info=f"DeletionError: {instance['key']}")
                 )
-                if spade_instance_response.status_code == status.HTTP_200_OK:
-                    logging.info(f"Deleted instance {str(instance['key'])}")
-                if spade_instance_response.status_code == status.HTTP_400_BAD_REQUEST:
-                    logging.info(f"No instance to delete {str(instance['key'])}")
+        return error_instances
 
-    async def check_health(self, instances: List[InstanceErrorData]) -> List[str]:
+    async def check_health(self, instances: List[InstanceErrorData]) -> List[InstanceErrorData]:
         bad_instances = []
         for instance in instances:
             url = f"http://{str(instance['key'])}:8000"
@@ -45,14 +57,23 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
                         "/healthcheck"
                     )
                     if spade_instance_response.status_code != status.HTTP_200_OK:
-                        logging.error(f"Got unexpected response from healthcheck {str(instance['key'])}")
+                        bad_instances.append(
+                            InstanceErrorData(key=instance['key'], status_code=spade_instance_response.status_code,
+                                              info=f"{instance['key']}: Unexpected")
+                        )
             except httpx.TimeoutException as e:
-                logging.error(f"Got timeout from healthcheck {str(instance['key'])}")
+                bad_instances.append(
+                    InstanceErrorData(key=instance['key'], status_code=status.HTTP_408_REQUEST_TIMEOUT,
+                                      info=f"{instance['key']}: Timeout")
+                )
             except httpx.ConnectError as e:
-                bad_instances.append(str(instance['key']))
+                bad_instances.append(
+                    InstanceErrorData(key=instance['key'], status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                                      info=f"{instance['key']}: Unavailable")
+                )
         return bad_instances
 
-
+    # noinspection PyBroadException
     async def create(self, agent_code_lines: List[str], graph: List[Dict[str, Any]],
                      instances: List[InstanceData], simulation_id: str) -> List[InstanceErrorData]:
         instance_agents = split_into_instances(graph, len(instances))
@@ -74,10 +95,10 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
                             InstanceErrorData(key=instance['key'], status_code=str(spade_instance_response.status_code),
                                               info=f"{instance['key']}: {str(spade_instance_response_body)}")
                         )
-            except httpx.TimeoutException as e:
+            except Exception:
                 error_instances.append(
-                    InstanceErrorData(key=instance['key'], status_code="408",
-                                      info=f"Connection timed out {instance['key']}")
+                    InstanceErrorData(key=instance['key'], status_code="418",
+                                      info=f"Creation Error: {instance['key']}")
                 )
 
         return error_instances
