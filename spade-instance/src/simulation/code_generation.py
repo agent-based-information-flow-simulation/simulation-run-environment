@@ -5,6 +5,7 @@ import datetime
 import logging
 import os
 import random
+import sys
 from typing import TYPE_CHECKING, Any, Dict, List
 
 import httpx
