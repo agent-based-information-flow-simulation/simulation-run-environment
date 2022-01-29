@@ -21,6 +21,6 @@ class DataProcessorService(BaseServiceWithoutRepository):
             response = await client.post(f"/simulations/{simulation_id}/backup", json=graph)
             if response.status_code != status.HTTP_200_OK:
                 raise DataProcessorException(
-                    response.status_code, str(response.body)
+                    response.status_code, ""
                 )
             return StatusResponse(status_code=response.status_code, status="success")

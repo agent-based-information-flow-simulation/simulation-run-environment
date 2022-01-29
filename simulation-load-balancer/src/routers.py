@@ -26,19 +26,21 @@ from uuid import uuid4
 router = APIRouter()
 
 
-@router.get("/simulations/", response_model=SimulationLoadBalancerState, status_code=200)
+@router.get("/simulations", response_model=SimulationLoadBalancerState, status_code=200)
 async def get_states(
         redis_conn: Redis = Depends(redis)
 ):
     instances = []
     simulations = []
     async for key in redis_conn.scan_iter():
-        kye_data = await redis_conn.get(key)
+        key_data = await redis_conn.get(key)
         key_data = json.loads(key_data)
-        if key_data["simulation"]:
-            data = SimulationData(simulation_id= key_data["key"], status=key_data["status"])
-            simulations.append(data)
-        else:
+        try:
+            is_sim = key_data["simulation"]
+            if is_sim:
+                data = SimulationData(simulation_id= key_data["key"], status=key_data["status"])
+                simulations.append(data)
+        except KeyError:
             instance = key_data
             instance_id = key.decode("UTF-8")
             data = InstanceData(key=instance_id, status=instance["status"], simulation_id=instance["simulation_id"],
@@ -50,7 +52,7 @@ async def get_states(
     return SimulationLoadBalancerState(instances=instances, simulations=simulations)
 
 
-@router.post("/api/simulations", response_model=CreatedSimulation, status_code=201)
+@router.post("/simulations", response_model=CreatedSimulation, status_code=201)
 async def create_simulation(
         simulation_data: CreateSpadeSimulation,
         translator_service_conn: TranslatorService = Depends(translator_service),
@@ -128,6 +130,7 @@ async def create_simulation(
         )
     sim_data = {
         "available_instances": available_instances,
+        "status": Status.ACTIVE.name,
         "simulation": True,
         "key": simulation_id
     }
@@ -164,7 +167,7 @@ async def del_instance_data(
 
     success = False
     attempt = 0
-    to_delete = sim_instances
+    to_delete = sim_instances['available_instances']
     while not success and attempt < 3:
         error_instances = await simulation_creator_service_conn.delete_simulation_instances(to_delete)
         if len(error_instances) == 0:
@@ -173,6 +176,21 @@ async def del_instance_data(
             to_delete = error_instances
             attempt += 1
     if not success:
+        new_sim_data = {
+            "available_instances": [],
+            "status": Status.BROKEN.name,
+            "simulation": True,
+            "key": simulation_id
+        }
+        await redis_conn.mset({simulation_id: json.dumps(new_sim_data)})
         raise HTTPException(
             status_code=504, detail=f"Failed to delete simulation at {json.dumps(error_instances)}"
         )
+    else:
+        new_sim_data = {
+            "available_instances": [],
+            "status": Status.DEACTIVATED.name,
+            "simulation": True,
+            "key": simulation_id
+        }
+        await redis_conn.mset({simulation_id: json.dumps(new_sim_data)})

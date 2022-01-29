@@ -10,3 +10,4 @@ class Status(Enum):
     RUNNING = "RUNNING"
     ACTIVE = "ACTIVE"
     DEACTIVATED = "DEACTIVATED"
+    BROKEN = "BROKEN"

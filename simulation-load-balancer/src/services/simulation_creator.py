@@ -26,6 +26,7 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
     # noinspection PyBroadException
     async def delete_simulation_instances(self, instances: List[InstanceData]) -> List[InstanceErrorData]:
         error_instances = []
+        print(instances)
         for instance in instances:
             url = f"http://{str(instance['key'])}:8000"
             try:
