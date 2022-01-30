@@ -38,7 +38,7 @@ async def get_states(
         try:
             is_sim = key_data["simulation"]
             if is_sim:
-                data = SimulationData(simulation_id= key_data["key"], status=key_data["status"])
+                data = SimulationData(simulation_id=key_data["key"], status=key_data["status"])
                 simulations.append(data)
         except KeyError:
             instance = key_data
@@ -51,6 +51,94 @@ async def get_states(
             instances.append(data)
     return SimulationLoadBalancerState(instances=instances, simulations=simulations)
 
+@router.post("/simulations/{sim_id}", response_model=CreatedSimulation, status_code=201)
+async def create_from_backup(
+        sim_id: str,
+        simulation_creator_service_conn: SimulationCreatorService = Depends(simulation_creator_service),
+        data_processor_service_conn: DataProcessorService = Depends(data_processor_service),
+        redis_conn: Redis = Depends(redis)
+):
+    sim_data = await redis_conn.get(sim_id)
+    sim_data = json.loads(sim_data)
+    if sim_data['status'] == Status.ACTIVE.name:
+        raise HTTPException(
+            status.HTTP_406_NOT_ACCEPTABLE, f"Can't restart a running simulation"
+        )
+    #upon restart we create a new simulation id
+    try:
+        backup_status = await data_processor_service_conn.get_backup(sim_data["key"])
+    except DataProcessorException as e:
+        raise HTTPException(
+            500, f"Could not create a simulation (data processor: {e})"
+        )
+    backup = json.loads(backup_status)
+    simulation_id = str(uuid4())[:10]
+    try:
+        new_status = await data_processor_service_conn.save_state(simulation_id, backup)
+    except DataProcessorException as e:
+        raise HTTPException(
+            500, f"Could not create a simulation (data processor: {e})"
+        )
+
+    # start the simulation
+    available_instances = []
+    # get every instance which is available
+    async for key in redis_conn.scan_iter():
+        instance = await redis_conn.get(key)
+        instance = json.loads(instance)
+        instance["key"] = key.decode("utf-8");
+        logging.warning(instance["key"])
+        if str(instance["status"]) == Status.IDLE.name:
+            available_instances.append(instance)
+
+    try:
+        if len(available_instances) == 0:
+            raise HTTPException(
+                500, "Couldn't find available instances"
+            )
+        logging.info("Creating simulation...")
+        attempt = 1
+        success = False
+        # attempt three times to create the simulation
+        while not success and attempt <= 3:
+            attempt = attempt + 1
+            bad_instances = await simulation_creator_service_conn.create(sim_data["agent_code_lines"], backup, available_instances,
+                                                                         simulation_id)
+            if len(bad_instances) == 0:
+                # if every instance successfully started we finish
+                success = True
+            else:
+                print(bad_instances)
+                # otherwise, we check the health of all instances, to see if they are still up
+                bad_instances = await simulation_creator_service_conn.check_health(bad_instances)
+                bad_instances = filter(
+                    lambda instance_error: instance_error['status_code'] == status.HTTP_503_SERVICE_UNAVAILABLE,
+                    bad_instances)
+                # these instances must be removed from consideration
+                bad_keys = [inst['key'] for inst in bad_instances]
+                available_instances = [inst for inst in available_instances if inst['key'] not in bad_keys]
+                for key in bad_keys:
+                    await redis_conn.delete(key)
+                # for the remaining instances we need to delete all the correctly started simulations
+                await simulation_creator_service_conn.delete_simulation_instances(available_instances)
+        if not success:
+            raise HTTPException(
+                500, f"Couldn't create simulation (spade instances failed to start)"
+            )
+    except SimulationCreatorException as e:
+        raise HTTPException(
+            500, f"Couldn't create simulation (spade instance:{e})"
+        )
+    new_data = {
+        "available_instances": available_instances,
+        "status": Status.ACTIVE.name,
+        "simulation": True,
+        "key": simulation_id,
+        "agent_code_lines": sim_data["agent_code_lines"],
+    }
+    await redis_conn.mset({simulation_id: json.dumps(new_data)})
+
+    return CreatedSimulation(simulation_id=simulation_id, status=Status.ACTIVE.name, info="")
 
 @router.post("/simulations", response_model=CreatedSimulation, status_code=201)
 async def create_simulation(
@@ -89,7 +177,7 @@ async def create_simulation(
     async for key in redis_conn.scan_iter():
         instance = await redis_conn.get(key)
         instance = json.loads(instance)
-        instance["key"] = key.decode("UTF-8");
+        instance["key"] = key.decode("utf-8");
         logging.warning(instance["key"])
         if str(instance["status"]) == Status.IDLE.name:
             available_instances.append(instance)
@@ -116,7 +204,8 @@ async def create_simulation(
                 # these instances must be removed from consideration
                 bad_keys = [inst['key'] for inst in bad_instances]
                 available_instances = [inst for inst in available_instances if inst['key'] not in bad_keys]
-                await redis_conn.delete(*bad_keys)
+                for key in bad_keys:
+                    await redis_conn.delete(key)
                 # for the remaining instances we need to delete all the correctly started simulations
                 await simulation_creator_service_conn.delete_simulation_instances(available_instances)
         if not success:
@@ -131,7 +220,8 @@ async def create_simulation(
         "available_instances": available_instances,
         "status": Status.ACTIVE.name,
         "simulation": True,
-        "key": simulation_id
+        "key": simulation_id,
+        "agent_code_lines": agent_code_lines,
     }
     await redis_conn.mset({simulation_id: json.dumps(sim_data)})
 
@@ -145,9 +235,33 @@ async def save_instance_data(
         simulation_creator_service_conn: SimulationCreatorService = Depends(simulation_creator_service),
         redis_conn: Redis = Depends(redis),
 ):
-    data = body.json()
+    data = json.loads(body.json())
     logging.warning(f"Got state from instance: {instance_id}. State is: {data}")
-    await redis_conn.mset({instance_id: data});
+    await redis_conn.mset({instance_id: body.json()});
+
+    if len(data['broken_agents']) != 0 and (
+            data['status'] == Status.RUNNING.name or data['status'] == Status.STARTING.name):
+        sim_id = data['simulation_id']
+        available_instances = []
+        # get every instance which is available
+        async for key in redis_conn.scan_iter():
+            instance = await redis_conn.get(key)
+            instance = json.loads(instance)
+            instance["key"] = key.decode("utf-8");
+            logging.warning(instance["key"])
+            if str(instance["simulation_id"]) == sim_id:
+                available_instances.append(instance)
+        err = simulation_creator_service_conn.delete_simulation_instances(available_instances)
+        old_data = await redis_conn.get(sim_id)
+        old_data = json.loads(old_data)
+        sim_data = {
+            "available_instances": [],
+            "status": Status.BROKEN.name,
+            "simulation": True,
+            "key": sim_id,
+            "agent_code_lines": old_data["agent_code_lines"],
+        }
+        await redis_conn.mset({sim_id: json.dumps(sim_data)})
 
     return
 
@@ -182,7 +296,8 @@ async def del_instance_data(
             "available_instances": [],
             "status": Status.BROKEN.name,
             "simulation": True,
-            "key": simulation_id
+            "key": simulation_id,
+            "agent_code_lines": sim_instances["agent_code_lines"],
         }
         await redis_conn.mset({simulation_id: json.dumps(new_sim_data)})
         raise HTTPException(
@@ -193,6 +308,7 @@ async def del_instance_data(
             "available_instances": [],
             "status": Status.DEACTIVATED.name,
             "simulation": True,
-            "key": simulation_id
+            "key": simulation_id,
+            "agent_code_lines": sim_instances["agent_code_lines"],
         }
         await redis_conn.mset({simulation_id: json.dumps(new_sim_data)})

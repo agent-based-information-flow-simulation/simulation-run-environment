@@ -21,6 +21,15 @@ class DataProcessorService(BaseServiceWithoutRepository):
             response = await client.post(f"/simulations/{simulation_id}/backup", json=graph)
             if response.status_code != status.HTTP_200_OK:
                 raise DataProcessorException(
-                    response.status_code, ""
+                    response.status_code, "Couldn't save backup"
                 )
             return StatusResponse(status_code=response.status_code, status="success")
+
+    async def get_backup(self, simulation_id: str) -> List[Dict[str, Any]]:
+        async with httpx.AsyncClient(base_url=data_processor_settings.url) as client:
+            response = await client.get(f"simulations/{simulation_id}/backup")
+            if response.status_code != status.HTTP_200_OK:
+                raise DataProcessorException(
+                    response.status_code, "Couldn't load backup"
+                )
+            return response.content

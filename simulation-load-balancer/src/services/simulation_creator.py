@@ -14,6 +14,7 @@ from uuid import uuid4
 
 import logging
 
+import json
 
 def split_into_instances(graph: List[Dict[str, Any]], n: int) -> List[List[Dict[str, Any]]]:
     batch_size, rem = divmod(len(graph), n)
@@ -26,7 +27,6 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
     # noinspection PyBroadException
     async def delete_simulation_instances(self, instances: List[InstanceData]) -> List[InstanceErrorData]:
         error_instances = []
-        print(instances)
         for instance in instances:
             url = f"http://{str(instance['key'])}:8000"
             try:
@@ -51,7 +51,7 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
     async def check_health(self, instances: List[InstanceErrorData]) -> List[InstanceErrorData]:
         bad_instances = []
         for instance in instances:
-            url = f"http://{str(instance['key'])}:8000"
+            url = f"http://{str(instance.key)}:8000"
             try:
                 async with httpx.AsyncClient(base_url=url) as client:
                     spade_instance_response = await client.get(
@@ -59,18 +59,18 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
                     )
                     if spade_instance_response.status_code != status.HTTP_200_OK:
                         bad_instances.append(
-                            InstanceErrorData(key=instance['key'], status_code=spade_instance_response.status_code,
-                                              info=f"{instance['key']}: Unexpected")
+                            InstanceErrorData(key=instance.key, status_code=spade_instance_response.status_code,
+                                              info=f"{instance.key}: Unexpected")
                         )
             except httpx.TimeoutException as e:
                 bad_instances.append(
-                    InstanceErrorData(key=instance['key'], status_code=status.HTTP_408_REQUEST_TIMEOUT,
-                                      info=f"{instance['key']}: Timeout")
+                    InstanceErrorData(key=instance.key, status_code=status.HTTP_408_REQUEST_TIMEOUT,
+                                      info=f"{instance.key}: Timeout")
                 )
             except httpx.ConnectError as e:
                 bad_instances.append(
-                    InstanceErrorData(key=instance['key'], status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                                      info=f"{instance['key']}: Unavailable")
+                    InstanceErrorData(key=instance.key, status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                                      info=f"{instance.key}: Unavailable")
                 )
         return bad_instances
 
@@ -86,6 +86,7 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
                                "agent_data": agents}
             url = f"http://{str(instance['key'])}:8000"
             try:
+                print(type(agents))
                 async with httpx.AsyncClient(base_url=url) as client:
                     spade_instance_response = await client.post(
                         "/simulation", json=simulation_data,
@@ -96,12 +97,11 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
                             InstanceErrorData(key=instance['key'], status_code=str(spade_instance_response.status_code),
                                               info=f"{instance['key']}: {str(spade_instance_response_body)}")
                         )
-            except Exception:
+            except Exception as e:
+                print(e)
                 error_instances.append(
                     InstanceErrorData(key=instance['key'], status_code="418",
                                       info=f"Creation Error: {instance['key']}")
                 )
 
         return error_instances
-
-    async def restart(self, simulation_id: str, instances: List[InstanceData]):
