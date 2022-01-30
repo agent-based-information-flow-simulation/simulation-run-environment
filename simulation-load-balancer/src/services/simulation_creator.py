@@ -103,3 +103,5 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
                 )
 
         return error_instances
+
+    async def restart(self, simulation_id: str, instances: List[InstanceData]):

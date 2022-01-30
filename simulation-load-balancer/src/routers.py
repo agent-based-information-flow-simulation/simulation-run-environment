@@ -99,7 +99,6 @@ async def create_simulation(
         logging.info("Creating simulation...")
         attempt = 1
         success = False
-        # TODO MOVE TO ANOTHER FUNCTION
         # attempt three times to create the simulation
         while not success and attempt <= 3:
             attempt = attempt + 1
@@ -143,10 +142,13 @@ async def create_simulation(
 async def save_instance_data(
         instance_id: str,
         body: InstanceState,
+        simulation_creator_service_conn: SimulationCreatorService = Depends(simulation_creator_service),
         redis_conn: Redis = Depends(redis),
 ):
-    logging.warning(f"Got state from instance: {instance_id}. State is: {body.json()}")
-    await redis_conn.mset({instance_id: body.json()});
+    data = body.json()
+    logging.warning(f"Got state from instance: {instance_id}. State is: {data}")
+    await redis_conn.mset({instance_id: data});
+
     return
 
 
