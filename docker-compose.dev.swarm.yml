@@ -188,7 +188,6 @@ services:
       - redis-net
       - spade-instance-net
       - translator-net
-      - external-li-sre-net
     ports:
       - "8003:8000"
     volumes:
