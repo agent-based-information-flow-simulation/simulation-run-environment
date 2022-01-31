@@ -123,7 +123,7 @@ async def create_from_backup(
                 await simulation_creator_service_conn.delete_simulation_instances(available_instances)
         if not success:
             raise HTTPException(
-                500, f"Couldn't create simulation (spade instances failed to start)"
+                status.HTTP_503_SERVICE_UNAVAILABLE, f"Couldn't create simulation (spade instances failed to start)"
             )
     except SimulationCreatorException as e:
         raise HTTPException(
