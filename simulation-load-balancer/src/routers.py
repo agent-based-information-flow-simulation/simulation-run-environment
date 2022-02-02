@@ -253,8 +253,11 @@ async def save_instance_data(
             instance = json.loads(instance)
             instance["key"] = key.decode("utf-8");
             logging.warning(instance["key"])
-            if str(instance["simulation_id"]) == sim_id:
-                available_instances.append(instance)
+            try:
+                if str(instance["simulation_id"]) == sim_id:
+                    available_instances.append(instance)
+            except KeyError:
+                pass
         err = simulation_creator_service_conn.delete_simulation_instances(available_instances)
         old_data = await redis_conn.get(sim_id)
         old_data = json.loads(old_data)
