@@ -25,6 +25,12 @@ def test_get_broken_agents_returns_list_of_agents_that_are_not_alive() -> None:
     agent.jid = "agent@test.com"
     agent.is_alive = Mock()
     agent.is_alive.return_value = False
+    agent.client = Mock()
+    agent.client.suspended = False
+    agent.client.running = True
+    agent.client.established = True
+    agent.client.stream = Mock()
+    agent.client.stream.running = True
     agents = [agent]
     agent_behaviours = {}
 
@@ -38,6 +44,12 @@ def test_get_broken_agents_returns_empty_list_if_all_behaviours_are_healthy() ->
     agent.jid = "agent@test.com"
     agent.is_alive = Mock()
     agent.is_alive.return_value = True
+    agent.client = Mock()
+    agent.client.suspended = False
+    agent.client.running = True
+    agent.client.established = True
+    agent.client.stream = Mock()
+    agent.client.stream.running = True
     b1 = Mock()
     b1._exit_code = 0
     b2 = Mock()
@@ -56,6 +68,12 @@ def test_get_broken_agents_returns_list_of_agents_for_which_some_of_behaviours_a
     agent.jid = "agent@test.com"
     agent.is_alive = Mock()
     agent.is_alive.return_value = True
+    agent.client = Mock()
+    agent.client.suspended = False
+    agent.client.running = True
+    agent.client.established = True
+    agent.client.stream = Mock()
+    agent.client.stream.running = True
     b1 = Mock()
     b1._exit_code = 1
     b2 = Mock()
@@ -74,6 +92,12 @@ def test_get_broken_agents_returns_list_of_jids() -> None:
     agent.jid = "agent@test.com"
     agent.is_alive = Mock()
     agent.is_alive.return_value = False
+    agent.client = Mock()
+    agent.client.suspended = False
+    agent.client.running = True
+    agent.client.established = True
+    agent.client.stream = Mock()
+    agent.client.stream.running = True
     agents = [agent]
     agent_num_behaviours = []
 
