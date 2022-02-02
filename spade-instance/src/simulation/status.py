@@ -26,7 +26,12 @@ def get_broken_agents(
     broken_agents = []
 
     for agent in agents:
-        if not agent.is_alive():
+        if (
+            not agent
+            or not agent.client
+            or not agent.client.running
+            or not agent.is_alive()
+        ):
             broken_agents.append(str(agent.jid))
             break
 
