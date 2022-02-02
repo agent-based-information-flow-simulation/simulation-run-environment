@@ -36,8 +36,6 @@ def get_broken_agents(
             or not agent.client.established
             or agent.client.stream is None
             or not agent.client.stream.running
-            or agent.xml_stream is None
-            or agent.xml_stream.state == State.CLOSED
         ):
             broken_agents.append(str(agent.jid))
             continue
