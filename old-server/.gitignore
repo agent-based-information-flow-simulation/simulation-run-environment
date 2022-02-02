@@ -1,8 +1,0 @@
-.idea/
-venv/
-*__pycache__/
-.vscode
-clean-spade
-forked-spade
-logs*
-test.py
