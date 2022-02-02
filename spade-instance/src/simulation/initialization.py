@@ -30,6 +30,7 @@ async def async_register(agent: Agent) -> Coroutine[Any, Any, None]:  # pragma: 
     _, stream, _ = await aioxmpp.node.connect_xmlstream(
         agent.jid, metadata, loop=agent.loop
     )
+    setattr(agent, "xml_stream", stream)
     await aioxmpp.ibr.register(stream, query)
 
 
