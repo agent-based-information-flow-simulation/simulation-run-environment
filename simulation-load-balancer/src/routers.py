@@ -72,9 +72,16 @@ async def create_from_backup(
             500, f"Could not create a simulation (data processor: {e})"
         )
     backup = json.loads(backup_status)
+    initial_backup = []
+    for agent in backup:
+        initial_backup.append({
+            'jid': agent['jid'],
+            'type': agent['type'],
+            'connections': agent.get('connections', []),
+        })
     simulation_id = str(uuid4())[:10]
     try:
-        new_status = await data_processor_service_conn.save_state(simulation_id, backup)
+        new_status = await data_processor_service_conn.save_state(simulation_id, initial_backup)
     except DataProcessorException as e:
         raise HTTPException(
             500, f"Could not create a simulation (data processor: {e})"
