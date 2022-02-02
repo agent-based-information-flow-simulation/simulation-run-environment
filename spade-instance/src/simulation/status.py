@@ -28,12 +28,15 @@ def get_broken_agents(
     for agent in agents:
         if (
             not agent
+            or not agent.is_alive()
             or not agent.client
             or not agent.client.running
-            or not agent.is_alive()
+            or not agent.client.established
+            or not agent.client.stream
+            or not agent.client.stream.running
         ):
             broken_agents.append(str(agent.jid))
-            break
+            continue
 
         for behaviour in agent_behaviours[agent.jid]:
             if behaviour._exit_code != 0:
