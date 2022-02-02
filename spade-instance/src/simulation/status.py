@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Coroutine, Dict, List
 
 import httpx
 import orjson
+from aioxmpp.protocol import State
 
 from src.settings import simulation_settings
 from src.status import Status
@@ -26,9 +27,18 @@ def get_broken_agents(
     broken_agents = []
 
     for agent in agents:
-        if not agent.is_alive():
+        if (
+            agent is None
+            or not agent.is_alive()
+            or agent.client is None
+            or agent.client.suspended
+            or not agent.client.running
+            or not agent.client.established
+            or agent.client.stream is None
+            or not agent.client.stream.running
+        ):
             broken_agents.append(str(agent.jid))
-            break
+            continue
 
         for behaviour in agent_behaviours[agent.jid]:
             if behaviour._exit_code != 0:
