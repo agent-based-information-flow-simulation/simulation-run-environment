@@ -88,8 +88,12 @@ async def create_from_backup(
         instance = json.loads(instance)
         instance["key"] = key.decode("utf-8");
         logging.warning(instance["key"])
-        if str(instance["status"]) == Status.IDLE.name:
-            available_instances.append(instance)
+        try:
+            if str(instance["status"]) == Status.IDLE.name:
+                available_instances.append(instance)
+        except KeyError as e:
+            pass
+
 
     try:
         if len(available_instances) == 0:
