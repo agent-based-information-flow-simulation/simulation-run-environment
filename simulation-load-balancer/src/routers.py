@@ -258,7 +258,7 @@ async def save_instance_data(
                     available_instances.append(instance)
             except KeyError:
                 pass
-        err = simulation_creator_service_conn.delete_simulation_instances(available_instances)
+        err = await simulation_creator_service_conn.delete_simulation_instances(available_instances)
         old_data = await redis_conn.get(sim_id)
         old_data = json.loads(old_data)
         sim_data = {
