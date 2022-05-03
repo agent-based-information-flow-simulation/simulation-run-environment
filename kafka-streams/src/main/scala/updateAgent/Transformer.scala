@@ -8,9 +8,8 @@ import org.apache.kafka.streams.scala.serialization.Serdes._
 
 object Transformer {
   val getProperties: Agent => AgentProperties = (agent: Agent) => {
-    (agent.floats.++(
-      agent.enums
-    ) + ("simulation_id" -> agent.simulationId) + ("jid" -> agent.jid) + ("type" -> agent.agentType))
+    (agent.floats.++(agent.enums).++(agent.float_lists)
+      + ("simulation_id" -> agent.simulationId) + ("jid" -> agent.jid) + ("type" -> agent.agentType))
       .asInstanceOf[AgentProperties]
   }
 

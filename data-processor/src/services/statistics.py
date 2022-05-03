@@ -61,21 +61,30 @@ class StatisticsService(BaseService):
             return self._get_numerical_statistics(data)
         elif all(isinstance(item, str) for item in data):
             return self._get_categorical_statistics(data)
+        elif all(
+            isinstance(item, list)
+            and all([isinstance(subitem, (int, float)) for subitem in item])
+            for item in data
+        ):
+            return self._get_numerical_statistics(
+                [element for sublist in data for element in sublist]
+            )
         else:
             raise InconsistentListDataTypesException(
                 simulation_id, agent_type, property_, data
             )
 
-    async def _get_agent_type_list_length(
+    async def _get_agent_type_relationship_list_length(
         self, simulation_id: str, agent_type: str, list_name: str
     ) -> Statistics:
-        agent_type_list_length_records = (
-            await self.repository.get_agent_type_list_length(
+        agent_type_relationship_list_length_records = (
+            await self.repository.get_agent_type_relationship_list_length(
                 simulation_id, agent_type, list_name
             )
         )
         data: List[int] = [
-            record["list_length"] for record in agent_type_list_length_records
+            record["list_length"]
+            for record in agent_type_relationship_list_length_records
         ]
         return self._get_numerical_statistics(data)
 
@@ -166,7 +175,7 @@ class StatisticsService(BaseService):
                 simulation_id, agent_type, message_list, message_type
             )
         elif message_list and property_ == "length":
-            return await self._get_agent_type_list_length(
+            return await self._get_agent_type_relationship_list_length(
                 simulation_id, agent_type, message_list
             )
         elif message_type and property_:
@@ -176,7 +185,7 @@ class StatisticsService(BaseService):
                 )
             )
         elif connection_list and property_ == "length":
-            return await self._get_agent_type_list_length(
+            return await self._get_agent_type_relationship_list_length(
                 simulation_id, agent_type, connection_list
             )
         elif property_:
