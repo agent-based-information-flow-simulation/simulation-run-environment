@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-aasm = "*"
+aasm = "==0.0.33"
 fastapi = {extras = ["all"], version = "*"}
 
 [dev-packages]
