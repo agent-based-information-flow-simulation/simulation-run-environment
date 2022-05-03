@@ -22,6 +22,7 @@ object Domain {
       floats: HashMap[String, Float],
       connections: HashMap[String, Vector[Jid]],
       messages: HashMap[String, Vector[Message]],
+      float_lists: HashMap[String, Vector[Float]],
       enums: HashMap[String, Enum]
   )
 
