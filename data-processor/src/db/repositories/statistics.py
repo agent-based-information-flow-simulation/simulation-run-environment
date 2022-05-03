@@ -69,10 +69,10 @@ class StatisticsRepository(BaseRepository):
 
         return await records.single()
 
-    async def get_agent_type_list_length(
+    async def get_agent_type_relationship_list_length(
         self, simulation_id: str, agent_type: str, list_name: str
     ) -> List[Record]:
-        get_agent_type_list_length_query = """
+        get_agent_type_relationship_list_length_query = """
         MATCH (agent:Agent {simulation_id: $simulation_id, type: $agent_type})
         OPTIONAL MATCH (agent)-[list]->() WHERE TYPE(list) = $list_name
         WITH agent, COUNT(list) AS list_length
@@ -81,7 +81,7 @@ class StatisticsRepository(BaseRepository):
         """
 
         records = await self.session.run(
-            get_agent_type_list_length_query,
+            get_agent_type_relationship_list_length_query,
             simulation_id=simulation_id,
             agent_type=agent_type,
             list_name=list_name,
