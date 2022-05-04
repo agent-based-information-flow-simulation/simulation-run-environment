@@ -197,7 +197,7 @@ function mongo-restore() {
     fi
     docker exec -it "${1}" mkdir -p /opt/bitnami/mongodb/dump && \
     docker cp "${2}" "${1}":/opt/bitnami/mongodb/dump && \
-    docker exec -it "${1}" mongorestore --username root --password root --authenticationDatabase admin --db simulations --drop /opt/bitnami/mongodb/dump
+    docker exec -it "${1}" mongorestore --username root --password root --authenticationDatabase admin --db simulations --drop /opt/bitnami/mongodb/dump/simulations
 }
 
 case "${1}" in
