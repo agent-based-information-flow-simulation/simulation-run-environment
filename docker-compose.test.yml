@@ -8,6 +8,13 @@ services:
     container_name: data-processor-test
     restart: "no"
 
+  data-processor-mongo:
+    build:
+      context: ./data-processor-mongo
+      dockerfile: Dockerfile.test
+    container_name: data-processor-mongo-test
+    restart: "no"
+
   graph-generator:
     build:
       context: ./graph-generator

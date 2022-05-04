@@ -21,6 +21,18 @@ services:
       - data-processor-proxy-net
       - db-net
 
+  data-processor-mongo:
+    build: ./data-processor-mongo
+    environment:
+      - DB_URL=mongodb://user:pass@mongo:27017/simulations
+      - PORT=8000
+      - RELOAD=False
+      - WAIT_FOR_DB_ADDRESS=mongo:27017
+    image: "madpeh/sre-data-processor-mongo:${VERSION}"
+    networks:
+      - entrypoint-net
+      - mongo-net
+
   data-processor-proxy:
     build: ./data-processor-proxy
     environment:
@@ -48,6 +60,7 @@ services:
     build: ./entrypoint
     environment:
       - API_LISTEN_PORT=80
+      - DATA_PROCESSOR_MONGO_BACKEND_PORT=8000
       - DATA_PROCESSOR_PROXY_BACKEND_PORT=8000
       - DB_LISTEN_PORT=7687
       - DB_BACKEND_PORT=7687
