@@ -6,7 +6,7 @@ function usage() {
     echo "       join TOKEN IP:PORT: join the swarm cluster"
     echo "       network (REQUIRES SWARM CLUSTER): create shared networks for the swarm mode"
     echo "       start [-d: dev mode [-p: publish]] (REQUIRES SWARM CLUSTER): start the server"
-    echo "       scale <SERVICE: data-processor, kafka-consumer, kafka-streams, spade-instance> <N: number of instances> (REQUIRES SWARM CLUSTER): scale the server to N SERVICE instances"
+    echo "       scale <SERVICE: data-processor, kafka-consumer, kafka-consumer-mongo, kafka-streams, spade-instance> <N: number of instances> (REQUIRES SWARM CLUSTER): scale the server to N SERVICE instances"
     echo "       stop: stop the server"
     echo "       clean: stop the server and remove all docker data"
     echo "       stats: print stats from all services"
@@ -14,9 +14,11 @@ function usage() {
     echo "       publish [-d: dev mode (REQUIRES SWARM CLUSTER)]: publish the images to a registry"
     echo "       unit-test SERVICE: run the unit-test suite for the given service"
     echo "       reload SERVICE (REQUIRES DEV MODE): rebuild and update the service"
+    echo "       mongo-dump CONTAINER HOST_DESTINATION: dump the mongo database"
+    echo "       mongo-restore CONTAINER HOST_SOURCE: restore the mongo database"
     echo ""
-    echo "IMPORTANT: number of kafka-consumer/kafka-streams instances should be bigger or equal to the number of the topic partitions they read from"
-    echo "           see UPDATE_AGENT_OUTPUT_TOPIC_PARTITIONS for kafka-consumer, UPDATE_AGENT_INPUT_TOPIC_PARTITIONS for kafka-streams"
+    echo "IMPORTANT: number of kafka-consumer/kafka-conumser-mongo/kafka-streams instances should be bigger or equal to the number of the topic partitions they read from"
+    echo "           see UPDATE_AGENT_OUTPUT_TOPIC_PARTITIONS for kafka-consumer, UPDATE_AGENT_INPUT_TOPIC_PARTITIONS for kafka-consumer-mongo/kafka-streams"
     exit 1
 }
 
@@ -172,6 +174,32 @@ function reload() {
     docker service update sre_"${1}" --force
 }
 
+function mongo-dump() {
+    if [ -z "$1" ]; then
+        echo "missing container name"
+        usage
+    elif [ -z "$2" ]; then
+        echo "missing host destination"
+        usage
+    fi
+    docker exec -it "${1}" mongodump --username root --password root --authenticationDatabase admin --db simulations --out /opt/bitnami/mongodb/dump && \
+    docker cp "${1}":/opt/bitnami/mongodb/dump "${2}" && \
+    docker exec -it "${1}" rm -rf /opt/bitnami/mongodb/dump
+}
+
+function mongo-restore() {
+    if [ -z "$1" ]; then
+        echo "missing container name"
+        usage
+    elif [ -z "$2" ]; then
+        echo "missing host source"
+        usage
+    fi
+    docker exec -it "${1}" mkdir -p /opt/bitnami/mongodb/dump && \
+    docker cp "${2}" "${1}":/opt/bitnami/mongodb/dump && \
+    docker exec -it "${1}" mongorestore --username root --password root --authenticationDatabase admin --db simulations --drop /opt/bitnami/mongodb/dump
+}
+
 case "${1}" in
     init) init ;;
 
@@ -196,6 +224,10 @@ case "${1}" in
     unit-test) unit-test "${2}" ;;
 
     reload) reload "${2}" ;;
+
+    mongo-dump) mongo-dump "${2}" "${3}" ;;
+
+    mongo-restore) mongo-restore "${2}" "${3}" ;;
 
     *) usage ;;
 esac
