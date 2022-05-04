@@ -182,9 +182,10 @@ function mongo-dump() {
         echo "missing host destination"
         usage
     fi
-    docker exec -it "${1}" mongodump --username root --password root --authenticationDatabase admin --db simulations --out /opt/bitnami/mongodb/dump && \
-    docker cp "${1}":/opt/bitnami/mongodb/dump "${2}" && \
-    docker exec -it "${1}" rm -rf /opt/bitnami/mongodb/dump
+    ID=$RANDOM
+    docker exec -it "${1}" mongodump --username root --password root --authenticationDatabase admin --db simulations --out /opt/bitnami/mongodb/dump_"$ID" && \
+    docker cp "${1}":/opt/bitnami/mongodb/dump_"$ID"/simulations "${2}" && \
+    docker exec -it "${1}" rm -rf /opt/bitnami/mongodb/dump_"$ID"
 }
 
 function mongo-restore() {
@@ -195,9 +196,10 @@ function mongo-restore() {
         echo "missing host source"
         usage
     fi
-    docker exec -it "${1}" mkdir -p /opt/bitnami/mongodb/dump && \
-    docker cp "${2}" "${1}":/opt/bitnami/mongodb/dump && \
-    docker exec -it "${1}" mongorestore --username root --password root --authenticationDatabase admin --db simulations --drop /opt/bitnami/mongodb/dump/simulations
+    ID=$RANDOM
+    docker exec -it "${1}" mkdir -p /opt/bitnami/mongodb/dump_"$ID" && \
+    docker cp "${2}" "${1}":/opt/bitnami/mongodb/dump_"$ID" && \
+    docker exec -it "${1}" mongorestore --username root --password root --authenticationDatabase admin --db simulations --drop /opt/bitnami/mongodb/dump_"$ID"/simulations
 }
 
 case "${1}" in
