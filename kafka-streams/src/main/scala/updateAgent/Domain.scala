@@ -9,6 +9,7 @@ import org.apache.kafka.streams.scala.serialization.Serdes
 import scala.collection.immutable.HashMap
 
 object Domain {
+  type Timestamp = Int
   type SimulationId = String
   type Jid = String
   type AgentType = String
@@ -16,6 +17,7 @@ object Domain {
   type Enum = String
 
   case class Agent(
+      @JsonProperty("__timestamp__") timestamp: Timestamp,
       @JsonProperty("simulation_id") simulationId: SimulationId,
       jid: Jid,
       @JsonProperty("type") agentType: AgentType,
