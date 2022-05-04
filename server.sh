@@ -151,6 +151,12 @@ function publish() {
         docker-compose -f docker-compose.dev.swarm.yml build --parallel
         docker-compose -f docker-compose.dev.swarm.yml push
     else
+        source .env
+        read -p "Publish version ${VERSION} to registry? [y/n] " -r ANSWER
+        if [ "$ANSWER" != "y" ]; then
+            echo "aborting"
+            exit 1
+        fi
         docker-compose -f docker-compose.swarm.yml build --parallel
         docker-compose -f docker-compose.swarm.yml push
     fi
