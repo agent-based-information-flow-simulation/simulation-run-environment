@@ -19,6 +19,8 @@ RUN apt-get update && \
     netcat=1.10*  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+RUN useradd non-root-user
+USER non-root-user
 WORKDIR /api
 COPY ./startup_scripts /api/startup_scripts
 COPY ./entrypoint.sh /api/entrypoint.sh
