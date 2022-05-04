@@ -112,7 +112,7 @@ class Consumer:
     async def save_agent_updates_in_db(self, batch: List[Dict[str, Any]]) -> None:
         data = [
             {
-                "timestamp": datetime.utcnow(),
+                "timestamp": datetime.fromtimestamp(agent["__timestamp__"]),
                 "metadata": {
                     "jid": agent["jid"],
                     "simulation_id": agent["simulation_id"],
