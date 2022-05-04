@@ -115,6 +115,22 @@ services:
       - db-net
       - kafka-net
 
+  kafka-consumer-mongo:
+    build: ./kafka-consumer-mongo
+    environment:
+      - BATCH_TIMEOUT_MS=5000
+      - DB_URL=mongodb://user:pass@mongo:27017/simulations
+      - KAFKA_ADDRESS=kafka:9092
+      - LOG_LEVEL_MAIN=INFO
+      - UPDATE_AGENT_INPUT_TOPIC_NAME=update_agent_input
+      - WAIT_FOR_DB_ADDRESS=mongo:27017
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_input
+    image: 127.0.0.1:5000/sre-kafka-consumer-mongo
+    networks:
+      - mongo-net
+      - kafka-net
+
   kafka-gui:
     environment:
       - KAFKA_BROKERCONNECT=kafka:9092
@@ -157,6 +173,31 @@ services:
     networks:
       - kafka-net
       - zookeeper-net
+
+  mongo:
+    environment:
+      - MONGODB_ROOT_USER=root
+      - MONGODB_ROOT_PASSWORD=root
+      - MONGODB_USERNAME=user
+      - MONGODB_PASSWORD=pass
+      - MONGODB_DATABASE=simulations
+    image: bitnami/mongodb:5.0.8-debian-10-r10
+    networks:
+      - mongo-net
+    ports:
+      - "27017:27017"
+    
+  mongo-gui:
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=root
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_OPTIONS_EDITORTHEME=3024-night
+    image: mongo-express:0.54.0
+    networks:
+      - mongo-net
+    ports:
+      - "27018:8081"
 
   redis:
     environment:
@@ -262,6 +303,7 @@ networks:
   graph-generator-net:
   kafka-net:
   kafka-connect-net:
+  mongo-net:
   redis-net:
   spade-instance-net:
   translator-net:

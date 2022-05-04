@@ -105,6 +105,22 @@ services:
       - db-net
       - kafka-net
 
+  kafka-consumer-mongo:
+    build: ./kafka-consumer-mongo
+    environment:
+      - BATCH_TIMEOUT_MS=5000
+      - DB_URL=mongodb://user:pass@mongo:27017/simulations
+      - KAFKA_ADDRESS=kafka:9092
+      - LOG_LEVEL_MAIN=INFO
+      - UPDATE_AGENT_INPUT_TOPIC_NAME=update_agent_input
+      - WAIT_FOR_DB_ADDRESS=mongo:27017
+      - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
+      - WAIT_FOR_KAFKA_TOPICS=update_agent_input
+    image: 127.0.0.1:5000/sre-kafka-consumer-mongo
+    networks:
+      - mongo-net
+      - kafka-net
+
   kafka-streams:
     build: ./kafka-streams
     environment:
@@ -138,6 +154,19 @@ services:
     networks:
       - kafka-net
       - zookeeper-net
+
+  mongo:
+    environment:
+      - MONGODB_ROOT_USER=root
+      - MONGODB_ROOT_PASSWORD=root
+      - MONGODB_USERNAME=user
+      - MONGODB_PASSWORD=pass
+      - MONGODB_DATABASE=simulations
+    image: bitnami/mongodb:5.0.8-debian-10-r10
+    networks:
+      - mongo-net
+    volumes:
+      - mongo-data:/bitnami/mongodb
 
   redis:
     environment:
@@ -232,6 +261,7 @@ networks:
   graph-generator-net:
   kafka-net:
   kafka-connect-net:
+  mongo-net:
   redis-net:
   spade-instance-net:
   translator-net:
@@ -249,5 +279,6 @@ volumes:
   entrypoint-data:
   kafka-data:
   kafka-connect-data:
+  mongo-data:
   redis-data:
   zookeeper-data:
