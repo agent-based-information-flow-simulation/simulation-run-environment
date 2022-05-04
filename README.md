@@ -44,3 +44,5 @@ Host port mapping: </br>
 * port `9000` - spade instance
 * port `9090` - kafka gui
 * port `9093` - kafka
+* port `27017` - mongodb
+* port `27018` - mongodb gui
