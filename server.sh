@@ -78,7 +78,8 @@ function start() {
         COMPOSE_FILE=docker-compose.swarm.yml
     fi
 
-    if docker stack deploy -c ./"$COMPOSE_FILE" sre; then
+    source .env
+    if env VERSION="${VERSION}" docker stack deploy -c ./"$COMPOSE_FILE" sre; then
         echo "OK"
     else
         echo ""

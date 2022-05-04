@@ -39,7 +39,8 @@ Host port mapping: </br>
 * port `8001` - graph generator
 * port `8002` - data processor (via proxy)
 * port `8003` - simulation load balancer
-* port `8888` - entrypoint (to simulation load balancer and data processor proxy)
+* port `8004` - data processor mongo
+* port `8888` - entrypoint (simulation load balancer, data processor proxy, data processor mongo)
 * port `8889` - entrypoint (to neo4j)
 * port `9000` - spade instance
 * port `9090` - kafka gui
