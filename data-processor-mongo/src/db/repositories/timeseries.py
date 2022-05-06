@@ -83,6 +83,7 @@ class TimeseriesRepository(BaseRepository):
 
     async def delete_timeseries(self, simulation_id: str) -> int:
         result: DeleteResult = await self.collection.delete_many(
-            {"metadata.simulation_id": simulation_id}
+            {"metadata.simulation_id": simulation_id},
+            session=self.session,
         )
         return result.deleted_count
