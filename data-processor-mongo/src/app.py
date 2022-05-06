@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
 
 from src.db.connection import (
     create_shutdown_db_connection_handler,
@@ -21,5 +22,7 @@ def get_app(unit_tests: bool = False) -> FastAPI:
         app.add_event_handler("startup", create_startup_db_connection_handler(app))
         app.add_event_handler("shutdown", create_shutdown_db_connection_handler(app))
         app.add_event_handler("startup", create_startup_db_access_handler(app))
+
+    app.add_middleware(GZipMiddleware, minimum_size=1000)
 
     return app
