@@ -22,7 +22,7 @@ async def get_timeseries(
         raise HTTPException(400, str(e))
 
     return StreamingResponse(
-        db_cursor_wrapper.stream(),
+        db_cursor_wrapper.stream(chunk_size_bytes=1024 * 512),
         media_type="application/json",
         headers={
             "Access-Control-Expose-Headers": "Content-Disposition",
