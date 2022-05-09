@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bcceebb867c545099c0486ba0190938c2ee0ef38b1139e4785292bc7e6b23a23"
+            "sha256": "6564cb114c24e4487dda3dd1ff1059f787f0da920fc065fd671c23573df5fae3"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,11 +18,11 @@
     "default": {
         "aasm": {
             "hashes": [
-                "sha256:4f6a20648897a3aa53769e06ab0c0db56e540927c05dfb1e61d04db7db85dd33",
-                "sha256:d3b531fe48a35a2c5a3239588b8513df001ff6922d8e56d9b5655120b42d5ea0"
+                "sha256:49f7ccd4a01e8d8461e25c689874c9d913ce8019d134cd64f830e2e5759ea268",
+                "sha256:f1e8861ab1052215cee88603de1f65e7d8127429ca608813a1c5a9ae12b96190"
             ],
             "index": "pypi",
-            "version": "==0.0.43"
+            "version": "==0.0.45"
         },
         "anyio": {
             "hashes": [
@@ -68,7 +68,7 @@
                 "sha256:0f7569a4a6ff151958b64304071d370daa3243d15941a7beedf0c9fe5105603e",
                 "sha256:a851e51367fb93e9e1361732c1d60dab63eff98712e503ea7d92e6eccb109b4f"
             ],
-            "markers": "python_version >= '3.6' and python_version < '4.0'",
+            "markers": "python_version >= '3.6' and python_version < '4'",
             "version": "==2.2.1"
         },
         "email-validator": {
@@ -432,7 +432,7 @@
                 "sha256:44ece4d53fb1706f667c9bd1c648f5469a2ec925fcf3a776667042d645472c14",
                 "sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
             "version": "==1.26.9"
         },
         "uvicorn": {
