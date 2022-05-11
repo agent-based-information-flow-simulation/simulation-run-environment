@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List
-from aioredis import Redis
 
 import httpx
 from starlette import status
@@ -10,9 +9,6 @@ from src.exceptions import DataProcessorException
 from src.services.base import BaseServiceWithoutRepository
 from src.settings import data_processor_settings
 from src.models import StatusResponse
-from uuid import uuid4
-
-import logging
 
 
 class DataProcessorService(BaseServiceWithoutRepository):
