@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import List
 
 from pydantic import BaseModel
 
@@ -14,10 +14,12 @@ class CreatedSimulation(BaseModel):
     info: str
     status: str
 
+
 class SimulationData(CreatedSimulation):
     simulation_id: str
     info: str = None
     status: str
+
 
 class InstanceState(BaseModel):
     status: str

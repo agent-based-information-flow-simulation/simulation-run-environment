@@ -10,6 +10,7 @@ from src.handlers import (
 from src.routers import router
 from src.settings import configure_logging
 
+
 def get_app(unit_tests: bool = False) -> FastAPI:
     configure_logging()
     app = FastAPI()
@@ -22,7 +23,6 @@ def get_app(unit_tests: bool = False) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
 
     app.include_router(router)
 

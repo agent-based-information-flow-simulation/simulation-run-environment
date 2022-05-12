@@ -1,20 +1,21 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Type
-from starlette.requests import Request
-from aioredis import Redis
 
-from src.services.graph_generator import GraphGeneratorService
-from src.services.translator import TranslatorService
-from src.services.simulation_creator import SimulationCreatorService
+from aioredis import Redis
+from starlette.requests import Request
+
 from src.services.data_processor import DataProcessorService
+from src.services.graph_generator import GraphGeneratorService
+from src.services.simulation_creator import SimulationCreatorService
+from src.services.translator import TranslatorService
 
 if TYPE_CHECKING:  # pragma: no cover
     from src.services import BaseServiceWithoutRepository
 
 
 def _get_service_without_repository(
-        service_type: Type[BaseServiceWithoutRepository],
+    service_type: Type[BaseServiceWithoutRepository],
 ) -> Callable[[], BaseServiceWithoutRepository]:
     def __get_service_without_repository() -> BaseServiceWithoutRepository:
         return service_type()
