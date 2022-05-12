@@ -14,7 +14,9 @@ class GraphGeneratorService(BaseServiceWithoutRepository):
     async def generate(self, graph_code_lines: List[str]) -> List[Dict[str, Any]]:
         graph_generator_data = {"graph_code_lines": graph_code_lines}
 
-        async with httpx.AsyncClient(base_url=graph_generator_settings.url) as client:
+        async with httpx.AsyncClient(
+            base_url=graph_generator_settings.url, timeout=None
+        ) as client:
             graph_generator_response = await client.post(
                 "/python", json=graph_generator_data
             )
