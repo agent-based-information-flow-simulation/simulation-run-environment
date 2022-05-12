@@ -42,3 +42,11 @@ async def delete_timeseries(
         raise HTTPException(400, str(e))
 
     return {"num_deleted": num_deleted}
+
+
+@router.get("/timeseries/ids")
+async def get_all_timeseries_ids(
+    timeseries_service: TimeseriesService = Depends(timeseries_service),
+):
+    ids = await timeseries_service.get_all_timeseries_ids()
+    return {"ids": ids}

@@ -8,7 +8,7 @@ import orjson
 from src.db.repositories.base import BaseRepository
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Generator
+    from typing import Any, Dict, Generator, List
 
     from motor.motor_asyncio import AsyncIOMotorCursor
     from pymongo.results import DeleteResult
@@ -87,3 +87,6 @@ class TimeseriesRepository(BaseRepository):
             session=self.session,
         )
         return result.deleted_count
+
+    async def get_all_timeseries_ids(self) -> List[str]:
+        return await self.collection.distinct("metadata.simulation_id")
