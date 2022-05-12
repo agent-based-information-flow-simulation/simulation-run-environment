@@ -16,7 +16,9 @@ class TranslatorService(BaseServiceWithoutRepository):
     ) -> Tuple[List[str], List[str]]:
         translator_data = {"code_lines": aasm_code_lines}
 
-        async with httpx.AsyncClient(base_url=translator_settings.url) as client:
+        async with httpx.AsyncClient(
+            base_url=translator_settings.url, timeout=None
+        ) as client:
             translator_response = await client.post(
                 "/python/spade", json=translator_data
             )
