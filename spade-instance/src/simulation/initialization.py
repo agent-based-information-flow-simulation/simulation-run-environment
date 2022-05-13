@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import logging
 import os
 from typing import TYPE_CHECKING, Any, Coroutine, Dict, List
@@ -96,8 +97,6 @@ async def connect_agents(agents: List[Agent]) -> Coroutine[Any, Any, None]:
 # https://github.com/agent-based-information-flow-simulation/spade/blob/6a857c2ae0a86b3bdfd20ccfcd28a11e1c6db81e/spade/agent.py#L137
 # setup agent after it has been connected
 def setup_agent(agent: Agent) -> List[Behaviour]:
-    import copy
-
     agent.setup()
     agent._alive.set()
     behaviours = copy.copy(agent.behaviours)
