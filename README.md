@@ -6,10 +6,14 @@
 - [Getting Started](#getting_started)
 - [Usage](#usage)
 - [Structure](#structure)
+- [Contributing](#contributing)
 
 ## About <a name = "about"></a>
 
-Simulation run environment.
+Simulation Run Environment is a part of the [Agents Assembly](https://agents-assembly.com) ecosystem. Other applications are:
+- [Local Interface](https://github.com/agent-based-information-flow-simulation/local-interface) - GUI for simulation definition, management, and analysis.
+- [Communication Server](https://github.com/agent-based-information-flow-simulation/communication-server) - preconfigured Tigase instance, for XMPP Spade communication.
+- [Agents Assembly Translator](https://github.com/agent-based-information-flow-simulation/agents-assembly-translator) - translator for Agents Assembly code.
 
 ## Getting Started <a name = "getting_started"></a>
 
@@ -269,7 +273,7 @@ Host port mapping (dev only):
 * `27018`
 
 ### Redis <a name = "redis"></a>
-The service is used by the simulation load balancer to store the spade instances' states, simulation definitions, and additional metadata about the created simulations.
+The simulation load balancer uses the service to store the spade instances' states, simulation definitions, and additional metadata about the created simulations.
 
 Environment variables:
 * `REDIS_PASSWORD` - password (i.e., pass)
@@ -356,3 +360,6 @@ Environment variables:
 Host port mapping (dev only):
 * `2181`
 * `2182` (admin server)
+
+## Contributing <a name = "contributing"></a>
+Please follow the [contributing guide](CONTRIBUTING.md) if you wish to contribute to the project.
