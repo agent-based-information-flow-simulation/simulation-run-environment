@@ -80,18 +80,17 @@ Backups are accessed once a failure occurs or in the case of resuming the simula
 Additionally, the service handles requests related to the statistics about the simulation (see `data-processor/src/routers/statistics.py`).
 
 Environment variables:
-* `DB_URL`
-* `LOG_LEVEL_SERVICES`
-* `PORT`
-* `PROXY_REGISTRATION_ADDRESS`
-* `PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_NAME`
-* `PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_PORT`
-* `PROXY_REGISTRATION_MAX_RETRIES`
-* `PROXY_REGISTRATION_USER_NAME`
-* `PROXY_REGISTRATION_USER_PASSWORD`
-* `RELOAD`
-* `WAIT_FOR_DB_ADDRESS`
-* `WAIT_FOR_PROXY_ADDRESS`
+* `DB_URL` - neo4j connection string (Bolt access, i.e., `neo4j://db:7687`)
+* `PORT` - internal listen port (i.e., `8000`)
+* `PROXY_REGISTRATION_ADDRESS` - data processor proxy Web API address (i.e., `data-processor-proxy:5555`)
+* `PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_NAME` - data processor proxy backend name for data processor instances (i.e., `data_processor`)
+* `PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_PORT` - data processor proxy backend port for data processor instances (i.e., `8000`); it must match `PORT` value
+* `PROXY_REGISTRATION_MAX_RETRIES` - data processor proxy maximum number of registration retries (i.e., `100`)
+* `PROXY_REGISTRATION_USER_NAME` - data processor proxy user name (i.e., `admin`)
+* `PROXY_REGISTRATION_USER_PASSWORD` - data processor proxy user password (i.e., `admin`)
+* `RELOAD` - reload application after detecting a change in source files (i.e., `False`); if set to `True`, it requires the following volume attached: `data-processor/src:/api/src`
+* `WAIT_FOR_DB_ADDRESS` - neo4j address (HTTP access, i.e., `db:7474`)
+* `WAIT_FOR_PROXY_ADDRESS` - data processor proxy Web API address (i.e., `data-processor-proxy:5555`)
 
 ### Data processor Mongo <a name = "data-processor-mongo"></a>
 The service processes the agent data stored in the timeseries database (Mongo).
@@ -302,7 +301,7 @@ Host port mapping (dev only):
 The service runs the code received from the simulation load balancer.
 It consists of Web API (see `spade-instance/src/routers.py`) and the simulation process (see `spade-instance/src/simulation/main.py`).
 The latter one is created while starting the simulation.
-The API is used to communicate and manage the instance (see `spade-instance/src/routers.py`).
+The API is used to communicate and manage the instance.
 It is connected to the communication server stack to enable the exchange of messages between the agents.
 Periodically, the service sends an HTTP request to the simulation load balancer with its current state (see `spade-instance/src/repeated_tasks.py` and `spade-instance/src/state.py`).
 The service sends the running agents' state updates to the Kafka service.
