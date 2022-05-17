@@ -10,9 +10,11 @@
 
 ## About <a name = "about"></a>
 
-Simulation Run Environment is a part of the [Agents Assembly](https://agents-assembly.com) ecosystem. Other applications are:
+Environment for running scalable agent-based simulations.
+The Simulation Run Environment is a part of the [Agents Assembly](https://agents-assembly.com) ecosystem.
+Other applications are:
 - [Local Interface](https://github.com/agent-based-information-flow-simulation/local-interface) - GUI for simulation definition, management, and analysis.
-- [Communication Server](https://github.com/agent-based-information-flow-simulation/communication-server) - preconfigured Tigase instance, for XMPP Spade communication.
+- [Communication Server](https://github.com/agent-based-information-flow-simulation/communication-server) - cluster of servers used for XMPP communication.
 - [Agents Assembly Translator](https://github.com/agent-based-information-flow-simulation/agents-assembly-translator) - translator for Agents Assembly code.
 
 ## Getting Started <a name = "getting_started"></a>
