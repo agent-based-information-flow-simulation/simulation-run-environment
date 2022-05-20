@@ -85,6 +85,8 @@ The data is used for backup purposes (see `data-processor/src/routers/backup.py`
 Backups are accessed once a failure occurs or in the case of resuming the simulation after a stop.
 Additionally, the service handles requests related to the statistics about the simulation (see `data-processor/src/routers/statistics.py`).
 
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-data-processor)
+
 Environment variables:
 * `DB_URL` - neo4j connection string (Bolt access, i.e., neo4j://db:7687)
 * `PORT` - listen port (i.e., 8000)
@@ -102,6 +104,8 @@ Environment variables:
 The service processes the agent data stored in the timeseries database (Mongo).
 It handles the requests to access the timeseries data for further manual analysis (see `data-processor-mongo/src/routers/timeseries.py`).
 
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-data-processor-mongo)
+
 Environment variables:
 * `DB_URL` - MongoDB connection string (i.e., mongodb://user:pass@mongo:27017/simulations)
 * `PORT` - listen port (i.e., 8000)
@@ -114,6 +118,8 @@ Host port mapping (dev only):
 ### Data processor proxy <a name = "data-processor-proxy"></a>
 The proxy provides access to multiple instances of the data processor service.
 The registration procedure is automatic, and it happens once an instance of the data processor starts.
+
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-data-processor-proxy)
 
 Environment variables:
 * `API_PORT` - [Data Plane API](https://www.haproxy.com/documentation/hapee/latest/api/data-plane-api/) listen port (i.e., 5555)
@@ -139,6 +145,8 @@ Host port mapping (dev only):
 The service is the single entrypoint to the application.
 It provides access to the following services: data processor, data processor Mongo, simulation load balancer, and graph database.
 
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-entrypoint)
+
 Environment variables:
 * `API_LISTEN_PORT` - port the user interface uses to access the SRE API (i.e., 80)
 * `DATA_PROCESSOR_MONGO_BACKEND_PORT` - data processor Mongo backend port (i.e., 8000); it must match data processor Mongo `PORT` value
@@ -155,6 +163,8 @@ Host port mapping (dev only):
 It handles requests with algorithms for graph structure generation.
 It runs the code and generates the JSON representation of the network (see `graph-generator/src/routers.py`).
 
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-graph-generator)
+
 Environment variables:
 * `COMMUNICATION_SERVER_DOMAIN` - domain used by the XMPP server (i.e., cs_entrypoint)
 * `PORT` - listen port (i.e., 8000)
@@ -170,6 +180,8 @@ The spade instances produce data that is attached to the input topic.
 The Kafka streams service consumes the input topic and produces the output topic.
 The Kafka consumer consumes the output topic and moves the data to the graph database.
 The Kafka consumer Mongo consumes the input topic and moves the data to the timeseries database.
+
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-kafka)
 
 Environment variables:
 * `ALLOW_PLAINTEXT_LISTENER` - [Bitnami docs](https://github.com/bitnami/bitnami-docker-kafka#configuration) (i.e., yes)
@@ -188,6 +200,8 @@ Host port mapping (dev only):
 ### Kafka consumer <a name = "kafka-consumer"></a>
 Its purpose is to consume the data in batches from the Kafka output topic with agent updates and save it in the graph database.
 
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-kafka-consumer)
+
 Environment variables:
 * `BATCH_TIMEOUT_MS` - milliseconds spent waiting for a batch to be produced (i.e., 5000)
 * `DB_URL` - neo4j connection string (i.e., neo4j://db:7687)
@@ -200,6 +214,8 @@ Environment variables:
 
 ### Kafka consumer Mongo <a name = "kafka-consumer-mongo"></a>
 Its purpose is to consume the data in batches from the Kafka input topic with agent updates and save it in the timeseries database.
+
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-kafka-consumer-mongo)
 
 Environment variables:
 * `BATCH_TIMEOUT_MS` - milliseconds spent waiting for a batch to be produced (i.e., 5000)
@@ -223,6 +239,8 @@ Host port mapping (dev only):
 ### Kafka streams <a name = "kafka-streams"></a>
 The service is responsible for converting the data produced by spade instances to create a representation that can be easily inserted into the graph database.
 
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-kafka-streams)
+
 Environment variables:
 * `BOOTSTRAP_SERVER` - Kafka address (i.e., kafka:9092)
 * `UPDATE_AGENT_INPUT_TOPIC_NAME` - name of the topic with agent data from spade instances (i.e., update_agent_input); it must match Kafka topic creator `UPDATE_AGENT_INPUT_TOPIC_NAME` value
@@ -234,6 +252,8 @@ Environment variables:
 The service uses Apache Kafka utility scripts to connect to the Kafka service and create the available topics.
 After meeting its objective, it shutdowns.
 Therefore, it runs only once.
+
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-kafka-topic-creator)
 
 Environment variables:
 * `BOOTSTRAP_SERVER` - Kafka address (i.e., kafka:9092)
@@ -288,6 +308,8 @@ It is responsible for creating new simulations (see `simulation-load-balancer/sr
 Next, it is in charge of orchestrating the spade instances. It monitors instances' advertised states to make decisions about the simulation.
 As for its storage, it uses the Redis service.
 
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-simulation-load-balancer)
+
 Environment variables:
 * `GRAPH_GENERATOR_URL` - graph generator url (i.e., http://graph-generator:8000)
 * `DATA_PROCESSOR_URL` - data processor url (i.e., http://data-processor:8000)
@@ -303,7 +325,7 @@ Environment variables:
 Host port mapping (dev only):
 * `8003`
 
-### Spade instance <a name = "spade-instance"></a>
+### SPADE instance <a name = "spade-instance"></a>
 The service runs the code received from the simulation load balancer.
 It consists of Web API (see `spade-instance/src/routers.py`) and the simulation process (see `spade-instance/src/simulation/main.py`).
 The latter one is created while starting the simulation.
@@ -311,6 +333,8 @@ The API is used to communicate and manage the instance.
 It is connected to the communication server stack to enable the exchange of messages between the agents.
 Periodically, the service sends an HTTP request to the simulation load balancer with its current state (see `spade-instance/src/repeated_tasks.py` and `spade-instance/src/state.py`).
 The service sends the running agents' state updates to the Kafka service.
+
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-spade-instance)
 
 Environment variables:
 * `ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_URL` - url where the active simulation process sends its status (i.e., http://127.0.0.1:8000/internal/instance/status)
@@ -344,6 +368,8 @@ Environment variables:
 
 ### Translator <a name = "translator"></a>
 The service's Web API enables the translation of Agents Assembly code using the `aasm` package (see `translator/src/routers.py`).
+
+[Docker Hub](https://hub.docker.com/r/madpeh/sre-translator)
 
 Environment variables:
 * `PORT` - listen port (i.e., 8000)
