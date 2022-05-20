@@ -263,7 +263,7 @@ Environment variables:
 * `UPDATE_AGENT_INPUT_TOPIC_PARTITIONS` - number of partitions for the topic with agent data from spade instances (i.e., 1); the number must be bigger than the number of consumers
 * `UPDATE_AGENT_OUTPUT_TOPIC_NAME` - name of the topic with transformed agent data (i.e., update_agent_output)
 * `UPDATE_AGENT_OUTPUT_TOPIC_REPLICATION_FACTOR` - number of replicas for the topic with transformed agent data (i.e., 1)
-* `UPDATE_AGENT_OUTPUT_TOPIC_PARTITIONS` - number of partitions for the topic with transformed agent data (i.e., 1); the number must be bigger than the number of consumers
+* `UPDATE_AGENT_OUTPUT_TOPIC_PARTITIONS` - number of partitions for the topic with transformed agent data (i.e., 1); the number must be bigger than the number of consumers (in a single group)
 * `WAIT_FOR_KAFKA_ADDRESS` - Kafka address (i.e., kafka:9092)
 * `WAIT_FOR_ZOOKEEPER_ADDRESS` - Zookeeper address (i.e., zookeeper:2181)
 * `ZOOKEEPER_SERVER` - Zookeeper address (i.e., zookeeper:2181)
