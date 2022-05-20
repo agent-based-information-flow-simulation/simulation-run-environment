@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import logging
-import math
-import os
 from collections import Counter
 from typing import Any, List
 
@@ -19,9 +16,6 @@ from src.exceptions import (
 )
 from src.models import Statistics
 from src.services.base import BaseService
-
-logger = logging.getLogger(__name__)
-logger.setLevel(level=os.environ.get("LOG_LEVEL_SERVICES_STATISTICS", "INFO"))
 
 
 class StatisticsService(BaseService):

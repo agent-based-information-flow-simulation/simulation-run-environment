@@ -5,7 +5,6 @@ services:
     build: ./data-processor
     environment:
       - DB_URL=neo4j://db:7687
-      - LOG_LEVEL_SERVICES=INFO
       - PORT=8000
       - PROXY_REGISTRATION_ADDRESS=data-processor-proxy:5555
       - PROXY_REGISTRATION_BACKEND_DATA_PROCESSOR_NAME=data_processor

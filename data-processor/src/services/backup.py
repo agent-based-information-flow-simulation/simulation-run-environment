@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import logging
-import os
 from typing import Any, Dict, List
 
 from src.db.repositories.backup import BackupRepository
@@ -11,9 +9,6 @@ from src.exceptions import (
 )
 from src.models import CreateAgent
 from src.services.base import BaseService
-
-logger = logging.getLogger(__name__)
-logger.setLevel(level=os.environ.get("LOG_LEVEL_SERVICES_BACKUP", "INFO"))
 
 
 class BackupService(BaseService):
