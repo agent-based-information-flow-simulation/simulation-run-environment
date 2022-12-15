@@ -42,6 +42,7 @@ def generate_agents(
         del agent_data_dict["type"]
         agent = locals()[agent_type](
             password=communication_server_settings.password,
+            backup_method="http",
             backup_url=backup_settings.agent_backup_url,
             backup_period=backup_settings.period,
             backup_delay=backup_settings.delay,
