@@ -15,7 +15,7 @@ services:
       - RELOAD=False
       - WAIT_FOR_DB_ADDRESS=db:7474
       - WAIT_FOR_PROXY_ADDRESS=data-processor-proxy:5555
-    image: "madpeh/sre-data-processor:${VERSION}"
+    image: "aasm/sre-data-processor:${VERSION}"
     networks:
       - data-processor-proxy-net
       - db-net
@@ -27,7 +27,7 @@ services:
       - PORT=8000
       - RELOAD=False
       - WAIT_FOR_DB_ADDRESS=mongo:27017
-    image: "madpeh/sre-data-processor-mongo:${VERSION}"
+    image: "aasm/sre-data-processor-mongo:${VERSION}"
     networks:
       - entrypoint-net
       - mongo-net
@@ -37,7 +37,7 @@ services:
     environment:
       - API_PORT=5555
       - DATA_PROCESSOR_LISTEN_PORT=8000
-    image: "madpeh/sre-data-processor-proxy:${VERSION}"
+    image: "aasm/sre-data-processor-proxy:${VERSION}"
     networks:
       - data-processor-proxy-net
       - entrypoint-net
@@ -64,7 +64,7 @@ services:
       - DB_LISTEN_PORT=7687
       - DB_BACKEND_PORT=7687
       - SIMULATION_LOAD_BALANCER_BACKEND_PORT=8000
-    image: "madpeh/sre-entrypoint:${VERSION}"
+    image: "aasm/sre-entrypoint:${VERSION}"
     networks:
       - entrypoint-net
       - external-li-sre-net
@@ -77,7 +77,7 @@ services:
       - COMMUNICATION_SERVER_DOMAIN=cs_entrypoint
       - PORT=8000
       - RELOAD=False
-    image: "madpeh/sre-graph-generator:${VERSION}"
+    image: "aasm/sre-graph-generator:${VERSION}"
     networks:
       - graph-generator-net
 
@@ -93,7 +93,7 @@ services:
       - KAFKA_CFG_OFFSET_METADATA_MAX_BYTES=10485760
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - WAIT_FOR_ZOOKEEPER_ADDRESS=zookeeper:2181
-    image: "madpeh/sre-kafka:${VERSION}"
+    image: "aasm/sre-kafka:${VERSION}"
     networks:
       - kafka-net
       - zookeeper-net
@@ -112,7 +112,7 @@ services:
       - WAIT_FOR_DB_ADDRESS=db:7474
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
       - WAIT_FOR_KAFKA_TOPICS=update_agent_output
-    image: "madpeh/sre-kafka-consumer:${VERSION}"
+    image: "aasm/sre-kafka-consumer:${VERSION}"
     networks:
       - db-net
       - kafka-net
@@ -128,7 +128,7 @@ services:
       - WAIT_FOR_DB_ADDRESS=mongo:27017
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
       - WAIT_FOR_KAFKA_TOPICS=update_agent_input
-    image: "madpeh/sre-kafka-consumer-mongo:${VERSION}"
+    image: "aasm/sre-kafka-consumer-mongo:${VERSION}"
     networks:
       - mongo-net
       - kafka-net
@@ -141,7 +141,7 @@ services:
       - UPDATE_AGENT_OUTPUT_TOPIC_NAME=update_agent_output
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
       - WAIT_FOR_KAFKA_TOPICS=update_agent_input,update_agent_output
-    image: "madpeh/sre-kafka-streams:${VERSION}"
+    image: "aasm/sre-kafka-streams:${VERSION}"
     networks:
       - kafka-net
 
@@ -162,7 +162,7 @@ services:
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
       - WAIT_FOR_ZOOKEEPER_ADDRESS=zookeeper:2181
       - ZOOKEEPER_SERVER=zookeeper:2181
-    image: "madpeh/sre-kafka-topic-creator:${VERSION}"
+    image: "aasm/sre-kafka-topic-creator:${VERSION}"
     networks:
       - kafka-net
       - zookeeper-net
@@ -202,7 +202,7 @@ services:
       - RELOAD=False
       - TRANSLATOR_URL=http://translator:8000
       - WAIT_FOR_REDIS_ADDRESS=redis:6379
-    image: "madpeh/sre-simulation-load-balancer:${VERSION}"
+    image: "aasm/sre-simulation-load-balancer:${VERSION}"
     networks:
       - data-processor-proxy-net
       - entrypoint-net
@@ -242,7 +242,7 @@ services:
       - SIMULATION_PROCESS_HEALTH_CHECK_PERIOD=5
       - WAIT_FOR_KAFKA_ADDRESS=kafka:9092
       - WAIT_FOR_KAFKA_TOPICS=update_agent_input
-    image: "madpeh/sre-spade-instance:${VERSION}"
+    image: "aasm/sre-spade-instance:${VERSION}"
     networks:
       - kafka-net
       - spade-instance-net
@@ -253,7 +253,7 @@ services:
     environment:
       - PORT=8000
       - RELOAD=False
-    image: "madpeh/sre-translator:${VERSION}"
+    image: "aasm/sre-translator:${VERSION}"
     networks:
       - translator-net
 
