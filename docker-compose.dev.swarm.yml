@@ -253,9 +253,7 @@ services:
   spade-instance:
     build: ./spade-instance
     environment:
-      - ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_URL=http://127.0.0.1:8000/internal/instance/status
       - ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_PERIOD=10
-      - AGENT_BACKUP_URL=http://127.0.0.1:8000/internal/simulation/agent_data
       - AGENT_BACKUP_PERIOD=15
       - AGENT_BACKUP_DELAY=5
       - AGENT_REGISTRATION_MAX_CONCURRENCY=10
