@@ -20,7 +20,7 @@ logger.setLevel(level=os.environ.get("LOG_LEVEL_REPEATED_TASKS", "INFO"))
 
 
 async def get_instance_information(app: FastAPI) -> Awaitable[Dict[str, Any]]:
-    api_memory_usage = psutil.Process().memory_info().rss / 1024 ** 2
+    api_memory_usage = psutil.Process().memory_info().rss / 1024**2
     simulation_memory_usage = await get_app_simulation_state(
         app
     ).get_simulation_memory_usage()

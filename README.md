@@ -338,9 +338,7 @@ The service sends the running agents' state updates to the Kafka service.
 [Docker Hub](https://hub.docker.com/r/aasm/sre-spade-instance)
 
 Environment variables:
-* `ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_URL` - url where the active simulation process sends its status (i.e., http://127.0.0.1:8000/internal/instance/status)
 * `ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_PERIOD` - active simulation process status announcement period (i.e., 10)
-* `AGENT_BACKUP_URL` - url where the agent backups are sent (i.e., http://127.0.0.1:8000/internal/simulation/agent_data)
 * `AGENT_BACKUP_PERIOD` - agent backup period (i.e., 10)
 * `AGENT_BACKUP_DELAY` - agent first backup delay after starting (i.e., 5)
 * `AGENT_REGISTRATION_MAX_CONCURRENCY` - maximum number of concurrent agent registration requests to the communication server (i.e., 10)
