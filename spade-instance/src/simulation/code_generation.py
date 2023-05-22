@@ -16,6 +16,7 @@ import spade
 from src.settings import backup_settings, communication_server_settings
 
 if TYPE_CHECKING:  # pragma: no cover
+    from aioprocessing import AioQueue
     from spade.agent import Agent
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,9 @@ def remove_imports(agent_code_lines: List[str]) -> List[str]:
 
 
 def generate_agents(
-    agent_code_lines: List[str], agent_data: List[Dict[str, Any]]
+    agent_code_lines: List[str],
+    agent_data: List[Dict[str, Any]],
+    agent_updates: AioQueue,
 ) -> List[Agent]:
     agent_logger = logging.getLogger("agent")
     agent_logger.setLevel(level=os.environ.get("LOG_LEVEL_AGENT", "INFO"))
@@ -42,8 +45,8 @@ def generate_agents(
         del agent_data_dict["type"]
         agent = locals()[agent_type](
             password=communication_server_settings.password,
-            backup_method="http",
-            backup_url=backup_settings.agent_backup_url,
+            backup_method="queue",
+            backup_queue=agent_updates,
             backup_period=backup_settings.period,
             backup_delay=backup_settings.delay,
             logger=agent_logger,
