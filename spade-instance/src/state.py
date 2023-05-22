@@ -122,58 +122,63 @@ class State:
             )
             self.simulation_process.start()
             asyncio.create_task(
-                self.read_and_save_agent_updates(self.agent_updates, self.simulation_id)
+                self.read_update_from_queue_and_run(
+                    queue=self.agent_updates,
+                    queue_name=f"agent updates ({simulation_id})",
+                    simulation_id=simulation_id,
+                    func=self.create_send_agent_update_to_broker(),
+                )
             )
             asyncio.create_task(
-                self.read_and_save_simulation_status_updates(
-                    self.simulation_status_updates, self.simulation_id
+                self.read_update_from_queue_and_run(
+                    queue=self.simulation_status_updates,
+                    queue_name=f"instance updates ({simulation_id})",
+                    simulation_id=self.simulation_id,
+                    func=self.create_set_instance_state(),
                 )
             )
 
-    async def read_and_save_agent_updates(
-        self, queue: AioQueue, simulation_id: str
-    ) -> None:
-        queue_name = f"agent updates ({simulation_id})"
-        queue_size_task = asyncio.create_task(
-            self.show_queue_size(queue, every_seconds=30, name=queue_name)
-        )
+    def create_send_agent_update_to_broker(self):
         kafka = get_app_kafka(self.app)
-        logger.info(f"Started reading {queue_name} for simulation {simulation_id}")
-        while True:
-            update: Dict[str, Any] | None = await queue.coro_get()
-            if update is None:
-                break
 
+        async def send_agent_update_to_broker(
+            update: Dict[str, Any], simulation_id: str
+        ):
             update["simulation_id"] = simulation_id
             await kafka.send(
                 topic=kafka_settings.topic, key=update["jid"], value=update
             )
 
-        queue_size_task.cancel()
-        logger.info(f"Stopped reading {queue_name} for simulation {simulation_id}")
-        logger.info(
-            f"Unread items in {queue_name} queue after stopping: {queue.qsize()}"
-        )
+        return send_agent_update_to_broker
 
-    # TODO: reuse the code from 'read_and_save_agent_updates'
-    async def read_and_save_simulation_status_updates(
-        self, queue: AioQueue, simulation_id: str
+    def create_set_instance_state(self):
+        async def set_instance_state(update: Dict[str, Any], simulation_id: str):
+            await self.update_active_state(
+                status=update["status"],
+                num_agents=update["num_agents"],
+                broken_agents=update["broken_agents"],
+            )
+
+        return set_instance_state
+
+    async def read_update_from_queue_and_run(
+        self,
+        queue: AioQueue,
+        queue_name: str,
+        simulation_id: str,
+        func: Callable[[Dict[str, Any], str], Coroutine[Any, Any, None]],
     ) -> None:
-        queue_name = f"simulation status updates ({simulation_id})"
         queue_size_task = asyncio.create_task(
             self.show_queue_size(queue, every_seconds=30, name=queue_name)
         )
+
         logger.info(f"Started reading {queue_name} for simulation {simulation_id}")
         while True:
             update: Dict[str, Any] | None = await queue.coro_get()
             if update is None:
                 break
 
-            await self.update_active_state(
-                status=update["status"],
-                num_agents=update["num_agents"],
-                broken_agents=update["broken_agents"],
-            )
+            await func(update, simulation_id)
 
         queue_size_task.cancel()
         logger.info(f"Stopped reading {queue_name} for simulation {simulation_id}")
