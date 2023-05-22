@@ -19,7 +19,6 @@ class AppSettings(BaseSettings):
 
 
 class BackupSettings(BaseSettings):
-    agent_backup_url: str = os.environ.get("AGENT_BACKUP_URL", "")
     period: int = int(os.environ.get("AGENT_BACKUP_PERIOD", 15))
     delay: int = int(os.environ.get("AGENT_BACKUP_DELAY", 5))
 
@@ -36,7 +35,6 @@ class InstanceSettings(BaseSettings):
 
 
 class SimulationSettings(BaseSettings):
-    status_url: str = os.environ.get("ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_URL", "")
     status_period: int = int(
         os.environ.get("ACTIVE_SIMULATION_STATUS_ANNOUCEMENT_PERIOD", 10)
     )
