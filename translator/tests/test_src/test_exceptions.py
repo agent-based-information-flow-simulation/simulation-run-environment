@@ -14,7 +14,10 @@ pytestmark = pytest.mark.asyncio
 async def test_after_sending_invalid_aasm_code_response_has_translator_details(
     client: AsyncClient,
 ) -> None:
-    code = {"code_lines": ["eagent"]}
+    code = {
+        "code_lines": ["eagent"],
+        "module_lines": []
+        }
 
     response = await client.post("/python/spade", json=code)
 
@@ -27,7 +30,10 @@ async def test_after_sending_invalid_aasm_code_response_has_translator_details(
 async def test_after_sending_invalid_aasm_code_response_has_400_status_code(
     client: AsyncClient,
 ) -> None:
-    code = {"code_lines": ["eagent"]}
+    code = {
+        "code_lines": ["eagent"],
+        "module_lines": []
+        }
 
     response = await client.post("/python/spade", json=code)
 

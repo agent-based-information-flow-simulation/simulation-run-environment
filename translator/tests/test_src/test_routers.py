@@ -18,7 +18,8 @@ async def test_after_sending_aasm_code_response_has_agent_code(
         "code_lines": [
             "agent test",
             "eagent",
-        ]
+        ],
+        "module_lines": []
     }
 
     response = await client.post("/python/spade", json=code)
@@ -36,7 +37,8 @@ async def test_after_sending_aasm_code_response_has_graph_code(
             "graph statistical",
             "defg test, 1, 0",
             "egraph",
-        ]
+        ],
+        "module_lines": []
     }
 
     response = await client.post("/python/spade", json=code)
@@ -54,7 +56,8 @@ async def test_after_sending_aasm_code_response_has_200_status_code(
             "graph statistical",
             "defg test, 1, 0",
             "egraph",
-        ]
+        ],
+        "module_lines": []
     }
 
     response = await client.post("/python/spade", json=code)
