@@ -26,6 +26,26 @@ async def test_after_sending_aasm_code_response_has_agent_code(
 
     assert "agent_code_lines" in response.json()
 
+async def test_after_sending_aasm_code_response_has_module_code(
+    client: AsyncClient,
+) -> None:
+    code = {
+        "code_lines": [
+            "agent test",
+            "eagent",
+        ],
+        "module_lines": [
+            [
+                "!name test",
+                "!targets",
+                "spade",
+            ],
+        ]
+    }
+
+    response = await client.post("/python/spade", json=code)
+
+    assert "module_code_lines" in response.json()
 
 async def test_after_sending_aasm_code_response_has_graph_code(
     client: AsyncClient,
