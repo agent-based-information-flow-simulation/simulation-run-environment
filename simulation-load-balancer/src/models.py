@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 class CreateSpadeSimulation(BaseModel):
     aasm_code_lines: List[str]
+    module_code_lines: List[List[str]]
 
 
 class CreatedSimulation(BaseModel):
@@ -17,13 +18,13 @@ class CreatedSimulation(BaseModel):
 
 class SimulationData(CreatedSimulation):
     simulation_id: str
-    info: str = None
+    info: str | None = None
     status: str
 
 
 class InstanceState(BaseModel):
     status: str
-    simulation_id: str = None
+    simulation_id: str | None = None
     num_agents: int
     broken_agents: List[str]
     api_memory_usage_MiB: float

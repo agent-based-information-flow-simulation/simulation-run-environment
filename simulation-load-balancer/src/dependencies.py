@@ -11,7 +11,7 @@ from src.services.simulation_creator import SimulationCreatorService
 from src.services.translator import TranslatorService
 
 if TYPE_CHECKING:  # pragma: no cover
-    from src.services import BaseServiceWithoutRepository
+    from src.services.base import BaseServiceWithoutRepository
 
 
 def _get_service_without_repository(

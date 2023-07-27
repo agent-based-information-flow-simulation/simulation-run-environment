@@ -27,26 +27,26 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
     ) -> List[InstanceErrorData]:
         error_instances = []
         for instance in instances:
-            url = f"http://{str(instance['key'])}:8000"
+            url = f"http://{str(instance.key)}:8000"
             try:
                 async with httpx.AsyncClient(base_url=url, timeout=None) as client:
                     spade_instance_response = await client.delete("/simulation")
                     if spade_instance_response.status_code == status.HTTP_200_OK:
-                        logging.info(f"Deleted instance {str(instance['key'])}")
+                        logging.info(f"Deleted instance {str(instance.key)}")
                     else:
                         error_instances.append(
                             InstanceErrorData(
-                                key=instance["key"],
+                                key=instance.key,
                                 status_code=str(spade_instance_response.status_code),
-                                info=f"DeletionError: {instance['key']}",
+                                info=f"DeletionError: {instance.key}",
                             )
                         )
             except Exception:
                 error_instances.append(
                     InstanceErrorData(
-                        key=instance["key"],
+                        key=instance.key,
                         status_code="418",
-                        info=f"DeletionError: {instance['key']}",
+                        info=f"DeletionError: {instance.key}",
                     )
                 )
         return error_instances
@@ -89,6 +89,7 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
     async def create(
         self,
         agent_code_lines: List[str],
+        module_code_lines: List[str],
         graph: List[Dict[str, Any]],
         instances: List[InstanceData],
         simulation_id: str,
@@ -101,9 +102,10 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
             simulation_data = {
                 "simulation_id": simulation_id,
                 "agent_code_lines": agent_code_lines,
+                "module_code_lines": module_code_lines,
                 "agent_data": agents,
             }
-            url = f"http://{str(instance['key'])}:8000"
+            url = f"http://{str(instance.key)}:8000"
             try:
                 print(type(agents))
                 async with httpx.AsyncClient(base_url=url, timeout=None) as client:
@@ -115,18 +117,18 @@ class SimulationCreatorService(BaseServiceWithoutRepository):
                     if spade_instance_response.status_code != status.HTTP_201_CREATED:
                         error_instances.append(
                             InstanceErrorData(
-                                key=instance["key"],
+                                key=instance.key,
                                 status_code=str(spade_instance_response.status_code),
-                                info=f"{instance['key']}: {str(spade_instance_response_body)}",
+                                info=f"{instance.key}: {str(spade_instance_response_body)}",
                             )
                         )
             except Exception as e:
                 print(e)
                 error_instances.append(
                     InstanceErrorData(
-                        key=instance["key"],
+                        key=instance.key,
                         status_code="418",
-                        info=f"Creation Error: {instance['key']}",
+                        info=f"Creation Error: {instance.key}",
                     )
                 )
 

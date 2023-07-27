@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING, List
 
 import json
 import logging
@@ -36,6 +37,10 @@ from src.services.graph_generator import GraphGeneratorService
 from src.services.simulation_creator import SimulationCreatorService
 from src.services.translator import TranslatorService
 from src.status import Status
+
+if TYPE_CHECKING:  # pragma: no cover
+    from src.models import InstanceErrorData
+
 
 router = APIRouter()
 
@@ -90,7 +95,7 @@ async def create_from_backup(
         backup_status = await data_processor_service_conn.get_backup(sim_data["key"])
     except DataProcessorException as e:
         raise HTTPException(500, f"Could not create a simulation (data processor: {e})")
-    backup = json.loads(backup_status)
+    backup = json.loads(str(backup_status))
     initial_backup = []
     for agent in backup:
         initial_backup.append(
@@ -132,7 +137,7 @@ async def create_from_backup(
         while not success and attempt <= 3:
             attempt = attempt + 1
             bad_instances = await simulation_creator_service_conn.create(
-                sim_data["agent_code_lines"], backup, available_instances, simulation_id
+                sim_data["agent_code_lines"], sim_data["module_code_lines"], backup, available_instances, simulation_id
             )
             if len(bad_instances) == 0:
                 # if every instance successfully started we finish
@@ -144,7 +149,7 @@ async def create_from_backup(
                     bad_instances
                 )
                 bad_instances = filter(
-                    lambda instance_error: instance_error["status_code"]
+                    lambda instance_error: instance_error.status_code
                     == status.HTTP_503_SERVICE_UNAVAILABLE,
                     bad_instances,
                 )
@@ -194,8 +199,9 @@ async def create_simulation(
     redis_conn: Redis = Depends(redis),
 ):
     try:
-        agent_code_lines, graph_code_lines = await translator_service_conn.translate(
-            simulation_data.aasm_code_lines
+        agent_code_lines, graph_code_lines, module_code_lines = await translator_service_conn.translate(
+            simulation_data.aasm_code_lines,
+            simulation_data.module_code_lines
         )
     except TranslatorException as e:
         raise HTTPException(500, f"Could not create a simulation (translator: {e}).")
@@ -235,7 +241,7 @@ async def create_simulation(
         while not success and attempt <= 3:
             attempt = attempt + 1
             bad_instances = await simulation_creator_service_conn.create(
-                agent_code_lines, graph, available_instances, simulation_id
+                agent_code_lines, module_code_lines, graph, available_instances, simulation_id
             )
             if len(bad_instances) == 0:
                 # if every instance successfully started we finish
@@ -246,7 +252,7 @@ async def create_simulation(
                     bad_instances
                 )
                 bad_instances = filter(
-                    lambda instance_error: instance_error["status_code"]
+                    lambda instance_error: instance_error.status_code
                     == status.HTTP_503_SERVICE_UNAVAILABLE,
                     bad_instances,
                 )
@@ -273,6 +279,7 @@ async def create_simulation(
         "simulation": True,
         "key": simulation_id,
         "agent_code_lines": agent_code_lines,
+        "module_code_lines": module_code_lines,
     }
     await redis_conn.mset({simulation_id: json.dumps(sim_data)})
 
@@ -348,6 +355,7 @@ async def del_instance_data(
     success = False
     attempt = 0
     to_delete = sim_instances["available_instances"]
+    error_instances = []
     while not success and attempt < 3:
         error_instances = (
             await simulation_creator_service_conn.delete_simulation_instances(to_delete)

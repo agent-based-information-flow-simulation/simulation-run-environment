@@ -12,9 +12,9 @@ from src.settings import translator_settings
 
 class TranslatorService(BaseServiceWithoutRepository):
     async def translate(
-        self, aasm_code_lines: List[str]
-    ) -> Tuple[List[str], List[str]]:
-        translator_data = {"code_lines": aasm_code_lines}
+        self, aasm_code_lines: List[str], module_code_lines: List[List[str]]
+    ) -> Tuple[List[str], List[str], List[str]]:
+        translator_data = {"code_lines": aasm_code_lines, "module_code_lines": module_code_lines}
 
         async with httpx.AsyncClient(
             base_url=translator_settings.url, timeout=None
@@ -33,4 +33,5 @@ class TranslatorService(BaseServiceWithoutRepository):
         return (
             translator_response_body["agent_code_lines"],
             translator_response_body["graph_code_lines"],
+            translator_response_body["module_code_lines"],
         )
