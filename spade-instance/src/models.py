@@ -10,6 +10,7 @@ from src.status import Status
 class CreateSimulation(BaseModel):
     simulation_id: str
     agent_code_lines: List[str]
+    module_code_lines: List[str]
     agent_data: List[Dict[str, Any]]
 
 

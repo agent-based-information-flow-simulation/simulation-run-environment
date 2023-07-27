@@ -70,6 +70,7 @@ async def run_simulation(
 
 def main(
     agent_code_lines: List[str],
+    module_code_lines: List[str],
     agent_data: List[Dict[str, Any]],
     agent_updates: AioQueue,
     simulation_status_updates: AioQueue,
@@ -77,6 +78,6 @@ def main(
     uvloop.install()
     asyncio.run(
         run_simulation(
-            agent_code_lines, agent_data, agent_updates, simulation_status_updates
+            agent_code_lines, module_code_lines, agent_data, agent_updates, simulation_status_updates
         )
     )

@@ -98,6 +98,7 @@ class State:
         self,
         simulation_id: str,
         agent_code_lines: List[str],
+        module_code_lines: List[str],
         agent_data: List[Dict[str, Any]],
     ) -> Coroutine[Any, Any, None]:
         logger.debug(
@@ -115,6 +116,7 @@ class State:
                 target=main,
                 args=(
                     agent_code_lines,
+                    module_code_lines,
                     agent_data,
                     self.agent_updates,
                     self.simulation_status_updates,

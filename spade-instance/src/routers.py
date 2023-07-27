@@ -8,7 +8,7 @@ from fastapi.exceptions import HTTPException
 
 from src.dependencies import state
 from src.exceptions import SimulationException
-from src.models import CreateSimulation, DeletedSimulation
+from src.models import CreateSimulation, DeletedSimulation, CreateModules
 from src.state import State
 
 logger = logging.getLogger(__name__)
@@ -33,10 +33,12 @@ async def create_simulation(
         await state.start_simulation_process(
             simulation_data.simulation_id,
             simulation_data.agent_code_lines,
+            simulation_data.module_code_lines,
             simulation_data.agent_data,
         )
     except SimulationException as e:
         raise HTTPException(400, str(e))
+
 
 
 @router.delete("/simulation", response_model=DeletedSimulation, status_code=200)
