@@ -10,7 +10,7 @@ import uvloop
 from spade.container import Container
 
 from src.settings import simulation_settings
-from src.simulation.code_generation import generate_agents
+from src.simulation.code_generation import generate_agents, parse_module_code
 from src.simulation.initialization import connect_agents, setup_agents
 from src.simulation.status import send_status
 
@@ -44,14 +44,18 @@ class SimulationInfiniteLoop:
 
 async def run_simulation(
     agent_code_lines: List[str],
+    module_code_lines: List[str],
     agent_data: List[Dict[str, Any]],
     agent_updates: AioQueue,
     simulation_status_updates: AioQueue,
-) -> Coroutine[Any, Any, None]:
+):
     Container().loop = asyncio.get_running_loop()
 
+    logger.info("Loading modules...")
+    modules = parse_module_code(module_code_lines)
+
     logger.info("Generating agents...")
-    agents = generate_agents(agent_code_lines, agent_data, agent_updates)
+    agents = generate_agents(agent_code_lines, modules, agent_data, agent_updates)
 
     logger.info("Connecting agents to the communication server...")
     await connect_agents(agents)
