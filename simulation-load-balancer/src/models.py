@@ -44,6 +44,7 @@ class InstanceErrorData(BaseModel):
 class SimulationLoadBalancerState(BaseModel):
     instances: List[InstanceData]
     simulations: List[SimulationData]
+    environment: str
 
 
 class StatusResponse(BaseModel):

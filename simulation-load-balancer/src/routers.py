@@ -72,7 +72,7 @@ async def get_states(redis_conn: Redis = Depends(redis)):
                 simulation_memory_usage_MiB=instance["simulation_memory_usage_MiB"],
             )
             instances.append(data)
-    return SimulationLoadBalancerState(instances=instances, simulations=simulations)
+    return SimulationLoadBalancerState(instances=instances, simulations=simulations, environment="simularion-run")
 
 
 @router.post("/simulations/{sim_id}", response_model=CreatedSimulation, status_code=201)
