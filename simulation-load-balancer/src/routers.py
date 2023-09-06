@@ -45,7 +45,7 @@ if TYPE_CHECKING:  # pragma: no cover
 router = APIRouter()
 
 
-@router.get("/simulations", response_model=SimulationLoadBalancerState, status_code=200)
+@router.get("/simulation", response_model=SimulationLoadBalancerState, status_code=200)
 async def get_states(redis_conn: Redis = Depends(redis)):
     instances = []
     simulations = []
@@ -75,7 +75,7 @@ async def get_states(redis_conn: Redis = Depends(redis)):
     return SimulationLoadBalancerState(instances=instances, simulations=simulations, environment="simularion-run")
 
 
-@router.post("/simulations/{sim_id}", response_model=CreatedSimulation, status_code=201)
+@router.post("/simulation/{sim_id}", response_model=CreatedSimulation, status_code=201)
 async def create_from_backup(
     sim_id: str,
     simulation_creator_service_conn: SimulationCreatorService = Depends(
@@ -185,7 +185,7 @@ async def create_from_backup(
     )
 
 
-@router.post("/simulations", response_model=CreatedSimulation, status_code=201)
+@router.post("/simulation", response_model=CreatedSimulation, status_code=201)
 async def create_simulation(
     simulation_data: CreateSpadeSimulation,
     translator_service_conn: TranslatorService = Depends(translator_service),
@@ -201,13 +201,13 @@ async def create_simulation(
     try:
         agent_code_lines, graph_code_lines, module_code_lines = await translator_service_conn.translate(
             simulation_data.aasm_code_lines,
-            simulation_data.module_code_lines
+            simulation_data.module_code_lines,
         )
     except TranslatorException as e:
         raise HTTPException(500, f"Could not create a simulation (translator: {e}).")
 
     try:
-        graph = await graph_generator_service_conn.generate(graph_code_lines)
+        graph = await graph_generator_service_conn.generate(graph_code_lines, simulation_data.seed)
     except GraphGeneratorException as e:
         raise HTTPException(
             500, f"Could not create a simulation (graph generator: {e})."
@@ -334,7 +334,7 @@ async def save_instance_data(
     return
 
 
-@router.delete("/simulations/{simulation_id}", status_code=200)
+@router.delete("/simulation/{simulation_id}", status_code=200)
 async def del_instance_data(
     simulation_id: str,
     simulation_creator_service_conn: SimulationCreatorService = Depends(

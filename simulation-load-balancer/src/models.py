@@ -8,6 +8,7 @@ from pydantic import BaseModel
 class CreateSpadeSimulation(BaseModel):
     aasm_code_lines: List[str]
     module_code_lines: List[List[str]]
+    seed: int
 
 
 class CreatedSimulation(BaseModel):

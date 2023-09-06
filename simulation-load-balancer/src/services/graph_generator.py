@@ -11,8 +11,8 @@ from src.settings import graph_generator_settings
 
 
 class GraphGeneratorService(BaseServiceWithoutRepository):
-    async def generate(self, graph_code_lines: List[str]) -> List[Dict[str, Any]]:
-        graph_generator_data = {"graph_code_lines": graph_code_lines}
+    async def generate(self, graph_code_lines: List[str], seed: int) -> List[Dict[str, Any]]:
+        graph_generator_data = {"graph_code_lines": graph_code_lines, "seed": seed}
 
         async with httpx.AsyncClient(
             base_url=graph_generator_settings.url, timeout=None
